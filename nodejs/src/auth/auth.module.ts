@@ -5,7 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import * as config from 'config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { GoogleStrategy } from './google.strategy';
 import { JwtStrategy } from './jwt.strategy';
+import { SocialJwtStrategy } from './social-jwt.strategy';
 import { UserRepository } from './user.repository';
 
 const jwtConfig = config.get('jwt');
@@ -22,7 +24,7 @@ const jwtConfig = config.get('jwt');
     TypeOrmModule.forFeature([UserRepository]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, GoogleStrategy, SocialJwtStrategy],
   exports: [PassportModule, JwtStrategy],
 })
 export class AuthModule {}
