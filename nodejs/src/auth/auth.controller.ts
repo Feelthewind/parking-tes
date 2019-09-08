@@ -49,6 +49,23 @@ export class AuthController {
     }
   }
 
+  @Get('naver')
+  @UseGuards(AuthGuard('naver'))
+  naverLogin() {
+    //
+  }
+
+  @Get('naver/callback')
+  @UseGuards(AuthGuard('naver'))
+  naverLoginCallback(@Req() req, @Res() res) {
+    const jwt: string = req.user.jwt;
+    if (jwt) {
+      res.redirect('http://localhost:4200/login/succes/' + jwt);
+    } else {
+      res.redirect('http://localhost:4200/login/failure');
+    }
+  }
+
   @Get('/test')
   @UseGuards(AuthGuard())
   test(@GetUser() user: User) {

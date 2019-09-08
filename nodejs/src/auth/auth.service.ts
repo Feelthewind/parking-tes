@@ -10,12 +10,9 @@ import * as config from 'config';
 import { sign } from 'jsonwebtoken';
 import { SignInDTO } from './dto/signin.dto';
 import { SignUpDTO } from './dto/signup.dto';
-import { JwtPayload } from './interface/jwt-payload.interface';
+import { IJwtPayload } from './interface/jwt-payload.interface';
+import { SocialProvider } from './provider.enum';
 import { UserRepository } from './user.repository';
-
-export enum Provider {
-  GOOGLE = 'google',
-}
 
 @Injectable()
 export class AuthService {
@@ -38,7 +35,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload: Partial<JwtPayload> = { email };
+    const payload: Partial<IJwtPayload> = { email };
     const accessToken = await this.jwtService.sign(payload);
     this.logger.debug(
       `Generated JWT Token with payload ${JSON.stringify(payload)}`,
@@ -49,7 +46,7 @@ export class AuthService {
 
   async validateOAuthLogin(
     third_party_id: string,
-    provider: Provider,
+    provider: SocialProvider,
   ): Promise<string> {
     try {
       // You can add some registration logic here,

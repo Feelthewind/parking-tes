@@ -1,21 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import * as config from 'config';
-import { Strategy } from 'passport-google-oauth20';
+import { Strategy } from 'passport-naver';
 import { AuthService } from '../auth.service';
 import { SocialProvider } from '../provider.enum';
 
-const googleConfig = config.get('social.google');
+const naverConfig = config.get('social.naver');
 
 @Injectable()
-export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
+export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
   constructor(private readonly authService: AuthService) {
     super({
-      clientID: googleConfig.get('clientID'),
-      clientSecret: googleConfig.get('clientSecret'),
-      callbackURL: 'http://localhost:3000/auth/google/callback',
+      clientID: naverConfig.get('clientID'),
+      clientSecret: naverConfig.get('clientSecret'),
+      callbackURL: 'http://localhost:3000/auth/naver/callback',
       passReqToCallback: true,
-      scope: ['profile'],
     });
   }
 
@@ -28,10 +27,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   ) {
     try {
       console.log(profile);
+      console.log(accessToken);
+      console.log(refreshToken);
 
       const jwt = await this.authService.validateOAuthLogin(
         profile.id,
-        SocialProvider.GOOGLE,
+        SocialProvider.NAVER,
       );
       const user = {
         jwt,
