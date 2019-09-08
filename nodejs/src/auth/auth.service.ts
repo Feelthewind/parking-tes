@@ -10,7 +10,7 @@ import * as config from 'config';
 import { sign } from 'jsonwebtoken';
 import { SignInDTO } from './dto/signin.dto';
 import { SignUpDTO } from './dto/signup.dto';
-import { JwtPayload } from './jwt-payload.interface';
+import { JwtPayload } from './interface/jwt-payload.interface';
 import { UserRepository } from './user.repository';
 
 export enum Provider {
@@ -38,7 +38,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload: JwtPayload = { email };
+    const payload: Partial<JwtPayload> = { email };
     const accessToken = await this.jwtService.sign(payload);
     this.logger.debug(
       `Generated JWT Token with payload ${JSON.stringify(payload)}`,
@@ -48,19 +48,24 @@ export class AuthService {
   }
 
   async validateOAuthLogin(
-    thirdPartyId: string,
+    third_party_id: string,
     provider: Provider,
   ): Promise<string> {
     try {
       // You can add some registration logic here,
       // to register the user using their thirdPartyId (in this case their googleId)
       // let user: IUser = await this.usersService.findOneByThirdPartyId(thirdPartyId, provider);
+      const user = await this.userRepository.findOne({
+        provider,
+        third_party_id,
+      });
 
-      // if (!user)
-      // user = await this.usersService.registerOAuthUser(thirdPartyId, provider);
+      if (!user) {
+        await this.userRepository.createSocialUser(third_party_id, provider);
+      }
 
       const payload = {
-        thirdPartyId,
+        third_party_id,
         provider,
       };
 

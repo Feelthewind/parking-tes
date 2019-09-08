@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
   Post,
   Req,
   Res,
@@ -17,6 +18,8 @@ import { User } from './user.entity';
 
 @Controller('auth')
 export class AuthController {
+  private logger = new Logger('AuthController');
+
   constructor(private authService: AuthService) {}
   @Post('/signup')
   signUp(@Body(ValidationPipe) signUpDTO: SignUpDTO): Promise<void> {
@@ -26,12 +29,6 @@ export class AuthController {
   @Post('/signin')
   signIn(@Body() signInDTO: SignInDTO): Promise<{ accessToken: string }> {
     return this.authService.signIn(signInDTO);
-  }
-
-  @Post('/test')
-  @UseGuards(AuthGuard())
-  test(@GetUser() user: User) {
-    console.dir(user);
   }
 
   @Get('google')
@@ -52,9 +49,9 @@ export class AuthController {
     }
   }
 
-  @Get('protected')
-  @UseGuards(AuthGuard('social-jwt'))
-  protectedResource() {
-    return 'JWT is working!';
+  @Get('/test')
+  @UseGuards(AuthGuard())
+  test(@GetUser() user: User) {
+    this.logger.log(`USER of this request is ${JSON.stringify(user)}`);
   }
 }

@@ -1,8 +1,5 @@
 export interface JwtPayload {
   email: string;
-}
-
-export interface SocialJwtPayload {
   provider: string;
-  thirdPartyId: string;
+  third_party_id: string;
 }

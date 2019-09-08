@@ -16,6 +16,11 @@ export class UserRepository extends Repository<User> {
   async signUp(signUpDTO: SignUpDTO): Promise<void> {
     const { address, email, name, password, is_disabled, type } = signUpDTO;
 
+    const found = await this.findOne({ email });
+    if (found) {
+      throw new ConflictException('Email already exists');
+    }
+
     const user = new User();
     user.address = address;
     user.email = email;
@@ -29,11 +34,26 @@ export class UserRepository extends Repository<User> {
       await user.save();
     } catch (error) {
       this.logger.error(error);
-      if (error.code === 'ER_DUP_ENTRY') {
-        throw new ConflictException('Email Or Address already exists');
-      } else {
-        throw new InternalServerErrorException();
-      }
+      // if (error.code === 'ER_DUP_ENTRY') {
+      //   throw new ConflictException('Email Or Address already exists');
+      // } else {
+      throw new InternalServerErrorException();
+      // }
+    }
+  }
+
+  async createSocialUser(
+    third_party_id: string,
+    provider: string,
+  ): Promise<void> {
+    const user = this.create();
+    user.third_party_id = third_party_id;
+    user.provider = provider;
+
+    try {
+      await user.save();
+    } catch (error) {
+      this.logger.error(error);
     }
   }
 

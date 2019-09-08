@@ -1,34 +1,47 @@
 import * as bcrypt from 'bcryptjs';
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: string;
 
-  @Column()
+  @Column({ nullable: true })
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   salt: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string;
 
-  @Column({ unique: true })
+  @Index()
+  @Column({ nullable: true })
   email: string;
 
-  @Column({ unique: true })
+  @Column({ nullable: true })
   address: string;
 
-  @Column()
+  @Column({ nullable: true })
   is_disabled: boolean;
 
-  @Column()
+  @Column({ nullable: true })
   type: string;
 
   @Column({ nullable: true })
-  creditCardNumber: string;
+  credit_card_number: string;
+
+  @Column({ nullable: true })
+  provider: string;
+
+  @Column({ nullable: true })
+  third_party_id: string;
 
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);
