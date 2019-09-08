@@ -44,10 +44,18 @@ export class AuthService {
     return { accessToken };
   }
 
+  async refreshToken(payload: Partial<IJwtPayload>) {
+    const accessToken = await this.jwtService.sign(payload);
+    this.logger.debug(
+      `Generated JWT Token with payload ${JSON.stringify(payload)}`,
+    );
+
+    return { accessToken };
+  }
+
   async validateOAuthLogin(
     thirdPartyID: string,
     provider: SocialProvider,
-    refreshToken: string,
   ): Promise<string> {
     try {
       // You can add some registration logic here,
@@ -59,12 +67,7 @@ export class AuthService {
       });
 
       if (!user) {
-        console.log(refreshToken);
-        await this.userRepository.createSocialUser(
-          thirdPartyID,
-          provider,
-          refreshToken,
-        );
+        await this.userRepository.createSocialUser(thirdPartyID, provider);
       }
 
       const payload = {

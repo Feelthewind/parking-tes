@@ -16,8 +16,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       callbackURL: 'http://localhost:3000/auth/google/callback',
       passReqToCallback: true,
       scope: ['profile'],
-      accessType: 'offline',
-      prompt: 'consent',
     });
   }
 
@@ -36,10 +34,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       const jwt = await this.authService.validateOAuthLogin(
         profile.id,
         SocialProvider.GOOGLE,
-        refreshToken,
       );
       const user = {
         jwt,
+        expiresIn: 3600,
       };
 
       done(null, user);

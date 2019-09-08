@@ -10,6 +10,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { SignInDTO } from './dto/signin.dto';
 import { SignUpDTO } from './dto/signUp.dto';
@@ -39,20 +40,33 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  googleLoginCallback(@Req() req, @Res() res) {
+  googleLoginCallback(@Req() req, @Res() res: Response) {
     // handles the Google OAuth2 callback
     const jwt: string = req.user.jwt;
+    const expiresIn: number = req.user.expiresIn;
     if (jwt) {
-      res.redirect('http://localhost:4200/login/succes/' + jwt);
+      res.redirect(
+        `http://localhost:4200/login/succes?jwt=${jwt}&expiresIn=${expiresIn}`,
+      );
     } else {
       res.redirect('http://localhost:4200/login/failure');
     }
   }
 
-  @Get('google/refresh')
+  @Get('refresh-token')
   @UseGuards(AuthGuard())
-  googleRefreshToken(@Req() req, @Res() res) {
-    console.dir(req.user);
+  async refreshToken(@Req() req, @Res() res: Response) {
+    const { email, provider, thirdPartyID } = req.user as User;
+    let payload;
+    if (email) {
+      payload = { email };
+    } else {
+      payload = { provider, thirdPartyID };
+    }
+    const jwt = await this.authService.refreshToken(payload);
+    if (jwt) {
+      res.json({ jwt, expiresIn: 3600 });
+    }
   }
 
   @Get('naver')

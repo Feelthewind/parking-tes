@@ -7,6 +7,7 @@ import * as bcrypt from 'bcryptjs';
 import { EntityRepository, Repository } from 'typeorm';
 import { SignInDTO } from './dto/signin.dto';
 import { SignUpDTO } from './dto/signup.dto';
+import { SocialProvider } from './provider.enum';
 import { User } from './user.entity';
 
 @EntityRepository(User)
@@ -44,13 +45,11 @@ export class UserRepository extends Repository<User> {
 
   async createSocialUser(
     thirdPartyID: string,
-    provider: string,
-    refreshToken: string,
+    provider: SocialProvider,
   ): Promise<void> {
     const user = this.create();
     user.thirdPartyID = thirdPartyID;
     user.provider = provider;
-    user.refreshToken = refreshToken;
 
     console.dir(user);
 

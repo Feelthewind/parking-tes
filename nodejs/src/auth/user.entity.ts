@@ -6,6 +6,7 @@ import {
   Index,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { SocialProvider } from './provider.enum';
 
 @Entity()
 export class User extends BaseEntity {
@@ -32,7 +33,7 @@ export class User extends BaseEntity {
   type: string;
 
   @Column({ nullable: true })
-  provider: string;
+  provider: SocialProvider;
 
   @Column({ nullable: true, name: 'third_party_id' })
   thirdPartyID: string;
@@ -42,9 +43,6 @@ export class User extends BaseEntity {
 
   @Column({ nullable: true, name: 'is_disabled' })
   isDisabled: boolean;
-
-  @Column({ nullable: true, name: 'refresh_token' })
-  refreshToken: string;
 
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);
