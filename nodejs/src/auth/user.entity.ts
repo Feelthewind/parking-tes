@@ -29,19 +29,22 @@ export class User extends BaseEntity {
   address: string;
 
   @Column({ nullable: true })
-  is_disabled: boolean;
-
-  @Column({ nullable: true })
   type: string;
-
-  @Column({ nullable: true })
-  credit_card_number: string;
 
   @Column({ nullable: true })
   provider: string;
 
-  @Column({ nullable: true })
-  third_party_id: string;
+  @Column({ nullable: true, name: 'third_party_id' })
+  thirdPartyID: string;
+
+  @Column({ nullable: true, name: 'credit_card_number' })
+  creditCardNumber: string;
+
+  @Column({ nullable: true, name: 'is_disabled' })
+  isDisabled: boolean;
+
+  @Column({ nullable: true, name: 'refresh_token' })
+  refreshToken: string;
 
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);

@@ -33,6 +33,7 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
       const jwt = await this.authService.validateOAuthLogin(
         profile.id,
         SocialProvider.NAVER,
+        refreshToken,
       );
       const user = {
         jwt,

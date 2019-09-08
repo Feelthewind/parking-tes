@@ -14,7 +14,11 @@ const jwtConfig = config.get('jwt');
 
 @Module({
   imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
+    PassportModule.register({
+      defaultStrategy: 'jwt',
+      accessType: 'offline',
+      prompt: 'consent',
+    }),
     JwtModule.register({
       secret: process.env.JWT_SECRET || jwtConfig.secret,
       signOptions: {

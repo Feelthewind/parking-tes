@@ -45,8 +45,9 @@ export class AuthService {
   }
 
   async validateOAuthLogin(
-    third_party_id: string,
+    thirdPartyID: string,
     provider: SocialProvider,
+    refreshToken: string,
   ): Promise<string> {
     try {
       // You can add some registration logic here,
@@ -54,15 +55,20 @@ export class AuthService {
       // let user: IUser = await this.usersService.findOneByThirdPartyId(thirdPartyId, provider);
       const user = await this.userRepository.findOne({
         provider,
-        third_party_id,
+        thirdPartyID,
       });
 
       if (!user) {
-        await this.userRepository.createSocialUser(third_party_id, provider);
+        console.log(refreshToken);
+        await this.userRepository.createSocialUser(
+          thirdPartyID,
+          provider,
+          refreshToken,
+        );
       }
 
       const payload = {
-        third_party_id,
+        thirdPartyID,
         provider,
       };
 

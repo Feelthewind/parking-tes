@@ -33,7 +33,7 @@ export class SignUpDTO {
 
   @IsBoolean()
   @IsNotEmpty()
-  is_disabled: boolean;
+  isDisabled: boolean;
 
   @IsNotEmpty()
   type: string;

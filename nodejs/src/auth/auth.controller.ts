@@ -49,6 +49,12 @@ export class AuthController {
     }
   }
 
+  @Get('google/refresh')
+  @UseGuards(AuthGuard())
+  googleRefreshToken(@Req() req, @Res() res) {
+    console.dir(req.user);
+  }
+
   @Get('naver')
   @UseGuards(AuthGuard('naver'))
   naverLogin() {

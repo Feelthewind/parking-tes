@@ -14,7 +14,7 @@ export class UserRepository extends Repository<User> {
   private logger = new Logger('UserRepository');
 
   async signUp(signUpDTO: SignUpDTO): Promise<void> {
-    const { address, email, name, password, is_disabled, type } = signUpDTO;
+    const { address, email, name, password, isDisabled, type } = signUpDTO;
 
     const found = await this.findOne({ email });
     if (found) {
@@ -28,7 +28,7 @@ export class UserRepository extends Repository<User> {
     user.salt = await bcrypt.genSalt();
     user.password = await this.hashPassword(password, user.salt);
     user.type = type;
-    user.is_disabled = is_disabled;
+    user.isDisabled = isDisabled;
 
     try {
       await user.save();
@@ -43,12 +43,16 @@ export class UserRepository extends Repository<User> {
   }
 
   async createSocialUser(
-    third_party_id: string,
+    thirdPartyID: string,
     provider: string,
+    refreshToken: string,
   ): Promise<void> {
     const user = this.create();
-    user.third_party_id = third_party_id;
+    user.thirdPartyID = thirdPartyID;
     user.provider = provider;
+    user.refreshToken = refreshToken;
+
+    console.dir(user);
 
     try {
       await user.save();
