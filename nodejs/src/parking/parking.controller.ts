@@ -31,4 +31,9 @@ export class ParkingController {
   async createOffer(@Body('parkingId') parkingId: number, @GetUser() user) {
     this.parkingService.createOffer(parkingId, user);
   }
+
+  @Post('/offer/accept')
+  async acceptOffer(@Body('parkingId') parkingId: number, @GetUser() user) {
+    await this.parkingService.acceptOffer(parkingId, user);
+  }
 }

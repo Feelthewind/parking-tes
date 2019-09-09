@@ -40,4 +40,15 @@ export class ParkingService {
       console.error(error);
     }
   }
+
+  async acceptOffer(parkingId: number, user: User): Promise<void> {
+    try {
+      await this.offerRepository.update(
+        { parkingId, buyerId: user.id },
+        { chosen: true },
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }
