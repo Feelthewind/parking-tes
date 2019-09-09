@@ -1,6 +1,6 @@
 db:
   host: 'localhost'
-  username: 'root'
+  username: 'postgres'
   password: 'password'
   synchronize: true
 

@@ -23,7 +23,6 @@ export class UserRepository extends Repository<User> {
     }
 
     const user = new User();
-    user.address = address;
     user.email = email;
     user.name = name;
     user.salt = await bcrypt.genSalt();

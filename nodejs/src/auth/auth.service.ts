@@ -6,8 +6,6 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as config from 'config';
-import { sign } from 'jsonwebtoken';
 import { SignInDTO } from './dto/signin.dto';
 import { SignUpDTO } from './dto/signup.dto';
 import { IJwtPayload } from './interface/jwt-payload.interface';
@@ -75,9 +73,7 @@ export class AuthService {
         provider,
       };
 
-      const jwt: string = sign(payload, config.get('jwt.secret'), {
-        expiresIn: 3600,
-      });
+      const jwt: string = this.jwtService.sign(payload);
       return jwt;
     } catch (err) {
       throw new InternalServerErrorException('validateOAuthLogin', err.message);

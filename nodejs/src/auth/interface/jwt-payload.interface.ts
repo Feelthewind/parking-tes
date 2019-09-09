@@ -4,5 +4,4 @@ export interface IJwtPayload {
   email: string;
   provider: SocialProvider;
   thirdPartyID: string;
-  expiresIn: number;
 }

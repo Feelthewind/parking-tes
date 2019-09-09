@@ -20,6 +20,7 @@ import { User } from './user.entity';
 @Controller('auth')
 export class AuthController {
   private logger = new Logger('AuthController');
+  private expiresIn = 3600;
 
   constructor(private authService: AuthService) {}
   @Post('/signup')
@@ -43,10 +44,11 @@ export class AuthController {
   googleLoginCallback(@Req() req, @Res() res: Response) {
     // handles the Google OAuth2 callback
     const jwt: string = req.user.jwt;
-    const expiresIn: number = req.user.expiresIn;
     if (jwt) {
       res.redirect(
-        `http://localhost:4200/login/succes?jwt=${jwt}&expiresIn=${expiresIn}`,
+        `http://localhost:4200/login/succes?jwt=${jwt}&expiresIn=${
+          this.expiresIn
+        }`,
       );
     } else {
       res.redirect('http://localhost:4200/login/failure');
@@ -65,7 +67,7 @@ export class AuthController {
     }
     const jwt = await this.authService.refreshToken(payload);
     if (jwt) {
-      res.json({ jwt, expiresIn: 3600 });
+      res.json({ jwt, expiresIn: this.expiresIn });
     }
   }
 
@@ -79,8 +81,13 @@ export class AuthController {
   @UseGuards(AuthGuard('naver'))
   naverLoginCallback(@Req() req, @Res() res) {
     const jwt: string = req.user.jwt;
+
     if (jwt) {
-      res.redirect('http://localhost:4200/login/succes/' + jwt);
+      res.redirect(
+        `http://localhost:4200/login/succes?jwt=${jwt}&expiresIn=${
+          this.expiresIn
+        }`,
+      );
     } else {
       res.redirect('http://localhost:4200/login/failure');
     }

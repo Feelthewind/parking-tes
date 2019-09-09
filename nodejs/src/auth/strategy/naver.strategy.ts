@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import * as config from 'config';
 import { Strategy } from 'passport-naver';
@@ -9,6 +9,8 @@ const naverConfig = config.get('social.naver');
 
 @Injectable()
 export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
+  private logger = new Logger('NaverStrategy');
+
   constructor(private readonly authService: AuthService) {
     super({
       clientID: naverConfig.get('clientID'),
@@ -26,10 +28,7 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
     done: Function,
   ) {
     try {
-      console.log(profile);
-      console.log(accessToken);
-      console.log(refreshToken);
-
+      this.logger.log(`Profile: ${JSON.stringify(profile)}`);
       const jwt = await this.authService.validateOAuthLogin(
         profile.id,
         SocialProvider.NAVER,
@@ -40,7 +39,7 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
 
       done(null, user);
     } catch (err) {
-      // console.log(err)
+      this.logger.error(err);
       done(err, false);
     }
   }

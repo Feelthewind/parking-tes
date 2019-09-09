@@ -1,17 +1,12 @@
 import * as bcrypt from 'bcryptjs';
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  Index,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, Index, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Parking } from '../parking/parking.entity';
 import { SocialProvider } from './provider.enum';
 
 @Entity()
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column({ nullable: true })
   name: string;
@@ -27,10 +22,10 @@ export class User extends BaseEntity {
   email: string;
 
   @Column({ nullable: true })
-  address: string;
-
-  @Column({ nullable: true })
   type: string;
+
+  @OneToOne(type => Parking, parking => parking.user)
+  parking: Parking;
 
   @Column({ nullable: true })
   provider: SocialProvider;

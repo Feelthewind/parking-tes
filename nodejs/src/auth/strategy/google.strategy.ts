@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import * as config from 'config';
 import { Strategy } from 'passport-google-oauth20';
@@ -9,6 +9,8 @@ const googleConfig = config.get('social.google');
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
+  private logger = new Logger('GoogleStrategy');
+
   constructor(private readonly authService: AuthService) {
     super({
       clientID: googleConfig.get('clientID'),
@@ -26,23 +28,20 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile,
     done: Function,
   ) {
-    try {
-      console.log(profile);
-      console.log(refreshToken);
-      console.log(accessToken);
+    this.logger.log(`Profile is ${JSON.stringify(profile)}`);
 
+    try {
       const jwt = await this.authService.validateOAuthLogin(
         profile.id,
         SocialProvider.GOOGLE,
       );
       const user = {
         jwt,
-        expiresIn: 3600,
       };
 
       done(null, user);
     } catch (err) {
-      // console.log(err)
+      this.logger.error(err);
       done(err, false);
     }
   }
