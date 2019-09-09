@@ -1,7 +1,8 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../auth/get-user.decorator';
 import { CreateParkingDTO } from './dto/create-parking.dto';
+import { Parking } from './parking.entity';
 import { ParkingService } from './parking.service';
 
 @Controller('parking')
@@ -35,5 +36,10 @@ export class ParkingController {
   @Post('/offer/accept')
   async acceptOffer(@Body('parkingId') parkingId: number, @GetUser() user) {
     await this.parkingService.acceptOffer(parkingId, user);
+  }
+
+  @Get()
+  async getParkings(): Promise<Parking[]> {
+    return this.parkingService.getParkings();
   }
 }

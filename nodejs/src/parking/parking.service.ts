@@ -51,4 +51,8 @@ export class ParkingService {
       console.error(error);
     }
   }
+
+  async getParkings(): Promise<Parking[]> {
+    return this.parkingRepository.find({ isAvailable: true });
+  }
 }
