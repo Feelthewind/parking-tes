@@ -14,7 +14,7 @@ export class Offer extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ default: false })
   chosen: boolean;
 
   @ManyToOne(type => Parking)

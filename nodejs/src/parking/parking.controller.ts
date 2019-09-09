@@ -26,4 +26,9 @@ export class ParkingController {
   ) {
     return this.parkingService.createParking(createParkingDTO, user);
   }
+
+  @Post('/offer')
+  async createOffer(@Body('parkingId') parkingId: number, @GetUser() user) {
+    this.parkingService.createOffer(parkingId, user);
+  }
 }
