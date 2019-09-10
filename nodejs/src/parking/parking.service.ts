@@ -1,16 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../auth/user.entity';
 import { UserRepository } from '../auth/user.repository';
 import { CreateParkingDTO } from './dto/create-parking.dto';
-import { OfferRepository } from './offer.repository';
+import { OfferRepository } from './offer/offer.repository';
 import { Parking } from './parking.entity';
 import { ParkingRepository } from './parking.repository';
 
 @Injectable()
 export class ParkingService {
   constructor(
+    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
+    @InjectRepository(ParkingRepository)
     private parkingRepository: ParkingRepository,
+    @InjectRepository(OfferRepository)
     private offerRepository: OfferRepository,
   ) {}
 

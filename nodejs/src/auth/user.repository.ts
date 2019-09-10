@@ -22,7 +22,7 @@ export class UserRepository extends Repository<User> {
       throw new ConflictException('Email already exists');
     }
 
-    const user = new User();
+    const user = this.create();
     user.email = email;
     user.name = name;
     user.salt = await bcrypt.genSalt();

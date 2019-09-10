@@ -6,8 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../auth/user.entity';
-import { Parking } from './parking.entity';
+import { User } from '../../auth/user.entity';
+import { Parking } from '../parking.entity';
 
 @Entity()
 export class Offer extends BaseEntity {
