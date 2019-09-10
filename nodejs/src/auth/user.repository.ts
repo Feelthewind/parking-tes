@@ -63,8 +63,6 @@ export class UserRepository extends Repository<User> {
     const { email, password } = signInDTO;
     const user = await this.findOne({ email });
 
-    console.dir(user);
-
     if (user && (await user.validatePassword(password))) {
       return user.email;
     } else {

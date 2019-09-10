@@ -1,3 +1,7 @@
+import {
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
 import { User } from '../auth/user.entity';
 import { CreateParkingDTO } from './dto/create-parking.dto';
@@ -29,7 +33,11 @@ export class ParkingRepository extends Repository<Parking> {
     try {
       return await parking.save();
     } catch (error) {
-      console.error(error);
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new ConflictException('Address already exists');
+      } else {
+        throw new InternalServerErrorException();
+      }
     }
   }
 }
