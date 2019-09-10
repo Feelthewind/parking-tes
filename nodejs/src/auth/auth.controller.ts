@@ -17,6 +17,7 @@ import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { SignInDTO } from './dto/signin.dto';
 import { SignUpDTO } from './dto/signUp.dto';
+import { UpdateUserDTO } from './dto/update-user.dto';
 import { GetUser } from './get-user.decorator';
 import { User } from './user.entity';
 
@@ -102,13 +103,22 @@ export class AuthController {
     this.logger.log(`USER of this request is ${JSON.stringify(user)}`);
   }
 
-  @Post('/profile')
+  @Post('/profile/img')
   @UseGuards(AuthGuard())
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() file, @GetUser() user: User) {
+  uploadProfileImage(@UploadedFile() file, @GetUser() user: User) {
     console.log(file);
     return {
       url: `/img/${file.filename}`,
     };
+  }
+
+  @Post('/profile')
+  @UseGuards(AuthGuard())
+  updateUser(
+    @Body() updateUserDTO: UpdateUserDTO,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return this.authService.updateUser(updateUserDTO, user);
   }
 }

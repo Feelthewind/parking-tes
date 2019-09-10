@@ -8,8 +8,10 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SignInDTO } from './dto/signin.dto';
 import { SignUpDTO } from './dto/signup.dto';
+import { UpdateUserDTO } from './dto/update-user.dto';
 import { IJwtPayload } from './interface/jwt-payload.interface';
 import { SocialProvider } from './provider.enum';
+import { User } from './user.entity';
 import { UserRepository } from './user.repository';
 
 @Injectable()
@@ -78,5 +80,9 @@ export class AuthService {
     } catch (err) {
       throw new InternalServerErrorException('validateOAuthLogin', err.message);
     }
+  }
+
+  async updateUser(updateUserDTO: UpdateUserDTO, user: User): Promise<void> {
+    await this.userRepository.update({ id: user.id }, updateUserDTO);
   }
 }
