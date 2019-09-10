@@ -31,6 +31,9 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   type: string;
 
+  @Column({ nullable: true })
+  img: string;
+
   @OneToOne(type => Parking, parking => parking.user)
   parking: Parking;
 

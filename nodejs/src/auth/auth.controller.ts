@@ -6,10 +6,13 @@ import {
   Post,
   Req,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { SignInDTO } from './dto/signin.dto';
@@ -97,5 +100,15 @@ export class AuthController {
   @UseGuards(AuthGuard())
   test(@GetUser() user: User) {
     this.logger.log(`USER of this request is ${JSON.stringify(user)}`);
+  }
+
+  @Post('/profile')
+  @UseGuards(AuthGuard())
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file, @GetUser() user: User) {
+    console.log(file);
+    return {
+      url: `/img/${file.filename}`,
+    };
   }
 }
