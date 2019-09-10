@@ -15,6 +15,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
+import { ChangePasswordDTO } from './dto/change-password.dto';
 import { SignInDTO } from './dto/signin.dto';
 import { SignUpDTO } from './dto/signUp.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
@@ -120,5 +121,14 @@ export class AuthController {
     @GetUser() user: User,
   ): Promise<void> {
     return this.authService.updateUser(updateUserDTO, user);
+  }
+
+  @Post('/password/update')
+  @UseGuards(AuthGuard())
+  changePassword(
+    @Body() changePasswordDTO: ChangePasswordDTO,
+    @GetUser() user: User,
+  ) {
+    return this.authService.changePassword(changePasswordDTO, user);
   }
 }

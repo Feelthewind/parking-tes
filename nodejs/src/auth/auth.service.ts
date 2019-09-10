@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ChangePasswordDTO } from './dto/change-password.dto';
 import { SignInDTO } from './dto/signin.dto';
 import { SignUpDTO } from './dto/signup.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
@@ -84,5 +85,16 @@ export class AuthService {
 
   async updateUser(updateUserDTO: UpdateUserDTO, user: User): Promise<void> {
     await this.userRepository.update({ id: user.id }, updateUserDTO);
+  }
+
+  async changePassword(changePasswordDTO: ChangePasswordDTO, user: User) {
+    const { currentPassword, newPassword } = changePasswordDTO;
+    const valid = await user.validatePassword(currentPassword);
+    if (valid) {
+      await this.userRepository.changePassword(newPassword, user);
+      return 'Password changed!';
+    } else {
+      return 'Something went wrong!';
+    }
   }
 }
