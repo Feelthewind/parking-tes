@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>App</title>
+</head>
+
+<body>
+  <h2>Reset password from nodejs</h2>
+
+  <p>token: {{token}}</p>
+
+  <form method="POST" action="/auth/reset/{{token}}">
+    New Password:<br>
+    <input type="text" name="password">
+    <br>
+    Check Password:<br>
+    <input type="text" name="checkPassword">
+    <br><br>
+    <input type="submit" value="Change Password">
+  </form>
+
+</body>
+
+</html>

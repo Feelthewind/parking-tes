@@ -4,7 +4,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, MoreThan, Repository } from 'typeorm';
 import { SignInDTO } from './dto/signin.dto';
 import { SignUpDTO } from './dto/signup.dto';
 import { SocialProvider } from './provider.enum';
@@ -75,6 +75,28 @@ export class UserRepository extends Repository<User> {
     user.password = await this.hashPassword(password, user.salt);
     try {
       await user.save();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async resetPassword(password: string, token: string) {
+    try {
+      const user = await this.findOne({
+        resetPasswordToken: token,
+        resetPasswordExpires: MoreThan(Date.now()),
+      });
+      if (!user) {
+        return;
+      } else {
+        user.salt = await bcrypt.genSalt();
+        user.password = await this.hashPassword(password, user.salt);
+        user.resetPasswordExpires = undefined;
+        user.resetPasswordToken = undefined;
+
+        await user.save();
+        return user;
+      }
     } catch (error) {
       console.error(error);
     }

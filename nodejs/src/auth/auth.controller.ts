@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Logger,
+  Param,
   Post,
   Req,
   Res,
@@ -130,5 +131,33 @@ export class AuthController {
     @GetUser() user: User,
   ) {
     return this.authService.changePassword(changePasswordDTO, user);
+  }
+
+  @Get('/forgot')
+  @UseGuards(AuthGuard())
+  forgotPassword(@Req() req, @GetUser() user: User) {
+    return this.authService.sendPasswordEmail(req.headers.host, user);
+  }
+
+  @Get('/reset/:token')
+  async checkResetPasswordToken(@Param('token') token: string, @Res() res) {
+    const valid = await this.authService.checkResetPasswordToken(token);
+    if (!valid) {
+      return {
+        error: 'Password reset token is invalid or has expired.',
+      };
+    } else {
+      res.render('index', {
+        token,
+      });
+    }
+  }
+
+  @Post('/reset/:token')
+  async resetPassword(
+    @Body('password') password: string,
+    @Param('token') token: string,
+  ) {
+    return this.authService.resetPassword(password, token);
   }
 }

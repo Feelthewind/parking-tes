@@ -1,11 +1,10 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as crypto from 'crypto';
+import * as nodemailer from 'nodemailer';
+import * as stmpTransport from 'nodemailer-smtp-transport';
+import { MoreThan } from 'typeorm';
 import { ChangePasswordDTO } from './dto/change-password.dto';
 import { SignInDTO } from './dto/signin.dto';
 import { SignUpDTO } from './dto/signup.dto';
@@ -14,6 +13,7 @@ import { IJwtPayload } from './interface/jwt-payload.interface';
 import { SocialProvider } from './provider.enum';
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
+import Mail = require('nodemailer/lib/mailer');
 
 @Injectable()
 export class AuthService {
@@ -96,5 +96,84 @@ export class AuthService {
     } else {
       return 'Something went wrong!';
     }
+  }
+
+  async sendPasswordEmail(host: string, user: User) {
+    const token = await crypto.randomBytes(20).toString('hex');
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000;
+
+    await user.save();
+
+    const smtpTransport = this.initializeNodemailer();
+
+    const mailOptions = {
+      from: process.env.GOOGLE_EMAIL,
+      to: user.email,
+      subject: 'Password reset',
+      text:
+        'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
+        'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
+        'http://' +
+        host +
+        '/auth/reset/' +
+        token +
+        '\n\n' +
+        'If you did not request this, please ignore this email and your password will remain unchanged.\n',
+    };
+
+    try {
+      await smtpTransport.sendMail(mailOptions);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async checkResetPasswordToken(token: string): Promise<boolean> {
+    const found = this.userRepository.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: MoreThan(Date.now()),
+    });
+    return !!found;
+  }
+
+  async resetPassword(password: string, token: string) {
+    const user = await this.userRepository.resetPassword(password, token);
+    if (user) {
+      const smtpTransport = this.initializeNodemailer();
+
+      const mailOptions = {
+        from: process.env.GOOGLE_EMAIL,
+        to: user.email,
+        subject: 'Your password has been changed',
+        text:
+          'Hello,\n\n' +
+          'This is a confirmation that the password for your account ' +
+          user.email +
+          ' has just been changed.\n',
+      };
+
+      try {
+        await smtpTransport.sendMail(mailOptions);
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      return 'Something went wrong';
+    }
+  }
+
+  private initializeNodemailer(): Mail {
+    return nodemailer.createTransport(
+      stmpTransport({
+        service: 'gmail',
+        host: 'smtp.gmail.com',
+        auth: {
+          user: process.env.GOOGLE_EMAIL,
+          pass: process.env.GOOGLE_PASSWORD,
+        },
+      }),
+    );
   }
 }

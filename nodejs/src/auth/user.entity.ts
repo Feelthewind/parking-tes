@@ -34,6 +34,12 @@ export class User extends BaseEntity {
   @Column({ nullable: true, name: 'img_url' })
   imgURL: string;
 
+  @Column({ nullable: true, name: 'reset_password_token' })
+  resetPasswordToken: string;
+
+  @Column({ type: 'bigint', nullable: true, name: 'reset_password_expires' })
+  resetPasswordExpires: number;
+
   @OneToOne(type => Parking, parking => parking.user)
   parking: Parking;
 
