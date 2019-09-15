@@ -75,6 +75,9 @@ export class ParkingService {
   }
 
   async getParkings(): Promise<Parking[]> {
-    return this.parkingRepository.find({ isAvailable: true });
+    // return this.parkingRepository.find({ isAvailable: true });
+    return this.parkingRepository.find({
+      relations: ['address', 'user'],
+    });
   }
 }

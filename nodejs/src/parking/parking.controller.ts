@@ -1,14 +1,17 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Post,
   UseGuards,
+  UseInterceptors,
   UsePipes,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../auth/get-user.decorator';
 import { OwnerGuard } from '../shared/owner.guard';
+import { UserGuard } from '../shared/user.guard';
 import { ValidationPipe } from '../shared/validation.pipe';
 import { CreateParkingDTO } from './dto/create-parking.dto';
 import { Parking } from './parking.entity';
@@ -40,15 +43,18 @@ export class ParkingController {
   }
 
   @Post('/offer')
+  @UseGuards(new UserGuard())
   async createOffer(@Body('parkingId') parkingId: number, @GetUser() user) {
     this.parkingService.createOffer(parkingId, user);
   }
 
   @Post('/offer/accept')
+  @UseGuards(new OwnerGuard())
   async acceptOffer(@Body('parkingId') parkingId: number, @GetUser() user) {
     await this.parkingService.acceptOffer(parkingId, user);
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get()
   async getParkings(): Promise<Parking[]> {
     return this.parkingService.getParkings();
