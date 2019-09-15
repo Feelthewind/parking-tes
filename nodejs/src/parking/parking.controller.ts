@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Patch,
   Post,
   UseGuards,
   UseInterceptors,
@@ -23,12 +24,13 @@ import { ParkingService } from './parking.service';
 export class ParkingController {
   constructor(private parkingService: ParkingService) {}
 
-  @Post('/location')
+  @Patch('/location')
   async setLocation(@Body() body, @GetUser() user): Promise<void> {
     return this.parkingService.setLocation(body.lat, body.lng, user);
   }
 
-  @Post('/available')
+  @Patch('/available')
+  @UseGuards(new OwnerGuard())
   async setAvailable(@Body('available') available: boolean, @GetUser() user) {
     return this.parkingService.setAvailable(available, user);
   }
@@ -45,13 +47,13 @@ export class ParkingController {
   @Post('/offer')
   @UseGuards(new UserGuard())
   async createOffer(@Body('parkingId') parkingId: number, @GetUser() user) {
-    this.parkingService.createOffer(parkingId, user);
+    return this.parkingService.createOffer(parkingId, user);
   }
 
   @Post('/offer/accept')
   @UseGuards(new OwnerGuard())
-  async acceptOffer(@Body('parkingId') parkingId: number, @GetUser() user) {
-    await this.parkingService.acceptOffer(parkingId, user);
+  async acceptOffer(@Body('buyerId') buyerId: number, @GetUser() user) {
+    return this.parkingService.acceptOffer(buyerId, user);
   }
 
   @UseInterceptors(ClassSerializerInterceptor)

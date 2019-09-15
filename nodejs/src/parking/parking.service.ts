@@ -63,10 +63,16 @@ export class ParkingService {
     }
   }
 
-  async acceptOffer(parkingId: number, user: User): Promise<void> {
+  async acceptOffer(buyerId: number, owner: User): Promise<void> {
+    const {
+      parking: { id: parkingId },
+    } = await this.userRepository.findOne(
+      { id: owner.id },
+      { relations: ['parking'] },
+    );
     try {
       await this.offerRepository.update(
-        { parkingId, buyerId: user.id },
+        { parkingId, buyerId },
         { chosen: true },
       );
     } catch (error) {
