@@ -1,11 +1,4 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../auth/user.entity';
 import { Address } from './address/address.entity';
 
@@ -28,10 +21,10 @@ export class Parking extends BaseEntity {
   @JoinColumn()
   user: User;
 
-  @Column()
+  @Column({name: 'user_id'})
   userId: number;
 
-  @Column()
+  @Column({name: 'address_id'})
   addressId: number;
 
   // @Column({

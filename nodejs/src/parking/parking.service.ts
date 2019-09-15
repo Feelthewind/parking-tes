@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { getConnection, Repository } from 'typeorm';
 import { User } from '../auth/user.entity';
 import { UserRepository } from '../auth/user.repository';
-import { AddressRepository } from './address/address.repository';
+import { Address } from './address/address.entity';
 import { CreateParkingDTO } from './dto/create-parking.dto';
 import { OfferRepository } from './offer/offer.repository';
 import { Parking } from './parking.entity';
@@ -17,8 +18,8 @@ export class ParkingService {
     private parkingRepository: ParkingRepository,
     @InjectRepository(OfferRepository)
     private offerRepository: OfferRepository,
-    @InjectRepository(AddressRepository)
-    private addressRepository: AddressRepository,
+    @InjectRepository(Address)
+    private addressRepository: Repository<Address>,
   ) {}
 
   // change address to lat, lng later for spatial column
@@ -34,25 +35,45 @@ export class ParkingService {
     createParkingDTO: CreateParkingDTO,
     user: User,
   ): Promise<Parking> {
-    // get this from coordinates!
-    // const address: IAddress = {
-    //   state: '경기도',
-    //   city: '구리시',
-    //   address1: '인창동',
-    //   address2: '66-9',
-    //   address3: '인창 아파트 101동 1501호',
-    //   postalCode: '11917',
-    // };
-    const { address } = createParkingDTO;
-    const addressEntity = await this.addressRepository.createAddress(address);
-    return this.parkingRepository.createParking(
-      createParkingDTO,
-      user,
-      addressEntity,
-    );
+    const { coordinates, isAvailable } = createParkingDTO;
+
+    const connection = getConnection();
+    const queryRunner = connection.createQueryRunner();
+    await queryRunner.startTransaction();
+
+    try {
+      const { address } = createParkingDTO;
+      let newAddress = this.addressRepository.create(address);
+      newAddress = await queryRunner.manager.save(newAddress);
+
+      let parking = this.parkingRepository.create();
+      parking.addressId = newAddress.id;
+      parking.coordinates = coordinates;
+      // parking.isAvailable = isAvailable;
+      parking.isAvailable = false;
+      parking.userId = user.id;
+      parking = await queryRunner.manager.save(parking);
+      await queryRunner.commitTransaction();
+      return parking;
+    } catch (error) {
+      console.error(error);
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
+    }
+
+    // return this.parkingRepository.createParking(
+    //   createParkingDTO,
+    //   user,
+    //   newAddress,
+    // );
   }
 
   async createOffer(parkingId: number, user: User): Promise<void> {
+    const parking = await this.parkingRepository.findOne({ id: parkingId });
+    if (!parking.isAvailable) {
+      throw new NotAcceptableException();
+    }
     const offer = this.offerRepository.create();
     offer.buyerId = user.id;
     offer.parkingId = parkingId;

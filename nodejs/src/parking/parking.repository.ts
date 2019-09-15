@@ -30,7 +30,7 @@ export class ParkingRepository extends Repository<Parking> {
     const { coordinates, isAvailable } = createParkingDTO;
 
     const parking = this.create();
-    parking.address = address;
+    parking.addressId = address.id;
     parking.coordinates = coordinates;
     // parking.isAvailable = isAvailable;
     parking.isAvailable = false;
