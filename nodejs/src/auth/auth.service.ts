@@ -7,8 +7,8 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as crypto from 'crypto';
-import * as nodemailer from 'nodemailer';
-import * as stmpTransport from 'nodemailer-smtp-transport';
+// import * as nodemailer from 'nodemailer';
+// import * as stmpTransport from 'nodemailer-smtp-transport';
 import { MoreThan } from 'typeorm';
 import { ChangePasswordDTO } from './dto/change-password.dto';
 import { SignInDTO } from './dto/signin.dto';
@@ -18,7 +18,7 @@ import { SocialProvider } from './enum/provider.enum';
 import { IJwtPayload } from './interface/jwt-payload.interface';
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
-import Mail = require('nodemailer/lib/mailer');
+// import Mail = require('nodemailer/lib/mailer');
 
 @Injectable()
 export class AuthService {
@@ -112,7 +112,7 @@ export class AuthService {
 
     await user.save();
 
-    const smtpTransport = this.initializeNodemailer();
+    // const smtpTransport = this.initializeNodemailer();
 
     const mailOptions = {
       from: process.env.GOOGLE_EMAIL,
@@ -130,7 +130,7 @@ export class AuthService {
     };
 
     try {
-      await smtpTransport.sendMail(mailOptions);
+      // await smtpTransport.sendMail(mailOptions);
     } catch (error) {
       console.error(error);
     }
@@ -147,7 +147,7 @@ export class AuthService {
   async resetPassword(password: string, token: string) {
     const user = await this.userRepository.resetPassword(password, token);
     if (user) {
-      const smtpTransport = this.initializeNodemailer();
+      // const smtpTransport = this.initializeNodemailer();
 
       const mailOptions = {
         from: process.env.GOOGLE_EMAIL,
@@ -161,7 +161,7 @@ export class AuthService {
       };
 
       try {
-        await smtpTransport.sendMail(mailOptions);
+        // await smtpTransport.sendMail(mailOptions);
       } catch (error) {
         console.error(error);
       }
@@ -170,16 +170,16 @@ export class AuthService {
     }
   }
 
-  private initializeNodemailer(): Mail {
-    return nodemailer.createTransport(
-      stmpTransport({
-        service: 'gmail',
-        host: 'smtp.gmail.com',
-        auth: {
-          user: process.env.GOOGLE_EMAIL,
-          pass: process.env.GOOGLE_PASSWORD,
-        },
-      }),
-    );
-  }
+  // private initializeNodemailer(): Mail {
+  //   return nodemailer.createTransport(
+  //     stmpTransport({
+  //       service: 'gmail',
+  //       host: 'smtp.gmail.com',
+  //       auth: {
+  //         user: process.env.GOOGLE_EMAIL,
+  //         pass: process.env.GOOGLE_PASSWORD,
+  //       },
+  //     }),
+  //   );
+  // }
 }
