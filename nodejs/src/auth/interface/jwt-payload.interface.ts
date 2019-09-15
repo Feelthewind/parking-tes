@@ -1,4 +1,4 @@
-import { SocialProvider } from '../provider.enum';
+import { SocialProvider } from '../enum/provider.enum';
 
 export interface IJwtPayload {
   email: string;

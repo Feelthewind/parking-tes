@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import * as config from 'config';
 import { Strategy } from 'passport-naver';
 import { AuthService } from '../auth.service';
-import { SocialProvider } from '../provider.enum';
+import { SocialProvider } from '../enum/provider.enum';
 
 const naverConfig = config.get('social.naver');
 

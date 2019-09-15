@@ -1,4 +1,9 @@
-import { Injectable, InternalServerErrorException, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as crypto from 'crypto';
@@ -9,8 +14,8 @@ import { ChangePasswordDTO } from './dto/change-password.dto';
 import { SignInDTO } from './dto/signin.dto';
 import { SignUpDTO } from './dto/signup.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { SocialProvider } from './enum/provider.enum';
 import { IJwtPayload } from './interface/jwt-payload.interface';
-import { SocialProvider } from './provider.enum';
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
 import Mail = require('nodemailer/lib/mailer');

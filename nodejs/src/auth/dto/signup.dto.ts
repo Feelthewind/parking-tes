@@ -6,6 +6,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { UserType } from '../enum/user-type.enum';
 
 export class SignUpDTO {
   @MaxLength(100)
@@ -36,5 +37,5 @@ export class SignUpDTO {
   isDisabled: boolean;
 
   @IsNotEmpty()
-  type: string;
+  type: UserType;
 }

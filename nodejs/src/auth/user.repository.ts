@@ -7,7 +7,7 @@ import * as bcrypt from 'bcryptjs';
 import { EntityRepository, MoreThan, Repository } from 'typeorm';
 import { SignInDTO } from './dto/signin.dto';
 import { SignUpDTO } from './dto/signup.dto';
-import { SocialProvider } from './provider.enum';
+import { SocialProvider } from './enum/provider.enum';
 import { User } from './user.entity';
 
 @EntityRepository(User)

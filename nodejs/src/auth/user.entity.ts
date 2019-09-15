@@ -8,7 +8,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Parking } from '../parking/parking.entity';
-import { SocialProvider } from './provider.enum';
+import { SocialProvider } from './enum/provider.enum';
+import { UserType } from './enum/user-type.enum';
 
 @Entity()
 export class User extends BaseEntity {
@@ -29,7 +30,7 @@ export class User extends BaseEntity {
   email: string;
 
   @Column({ nullable: true })
-  type: string;
+  type: UserType;
 
   @Column({ nullable: true, name: 'img_url' })
   imgURL: string;
