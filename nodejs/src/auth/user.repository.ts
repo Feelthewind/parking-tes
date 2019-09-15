@@ -15,7 +15,7 @@ export class UserRepository extends Repository<User> {
   private logger = new Logger('UserRepository');
 
   async signUp(signUpDTO: SignUpDTO): Promise<void> {
-    const { address, email, name, password, isDisabled, type } = signUpDTO;
+    const { email, name, password, isDisabled, type } = signUpDTO;
 
     const found = await this.findOne({ email });
     if (found) {

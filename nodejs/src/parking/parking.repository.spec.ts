@@ -8,7 +8,7 @@ import { CreateParkingDTO } from './dto/create-parking.dto';
 import { ParkingRepository } from './parking.repository';
 
 const mockParkingDTO: CreateParkingDTO = {
-  address: 'TestAddress',
+  coordinates: 'TestAddress',
   isAvailable: false,
 };
 

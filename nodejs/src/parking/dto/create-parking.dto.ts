@@ -1,4 +1,4 @@
 export class CreateParkingDTO {
-  address: string;
+  coordinates: string;
   isAvailable: boolean;
 }

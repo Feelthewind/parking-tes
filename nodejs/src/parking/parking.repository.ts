@@ -4,6 +4,7 @@ import {
 } from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
 import { User } from '../auth/user.entity';
+import { Address } from './address.entity';
 import { CreateParkingDTO } from './dto/create-parking.dto';
 import { Parking } from './parking.entity';
 
@@ -25,9 +26,10 @@ export class ParkingRepository extends Repository<Parking> {
     createParkingDTO: CreateParkingDTO,
     user: User,
   ): Promise<Parking> {
-    const { address, isAvailable } = createParkingDTO;
+    const { coordinates, isAvailable } = createParkingDTO;
     const parking = this.create();
-    parking.address = address;
+    parking.address = new Address();
+    parking.coordinates = coordinates;
     parking.isAvailable = isAvailable;
     parking.userId = user.id;
     try {

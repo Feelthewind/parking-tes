@@ -7,16 +7,21 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../auth/user.entity';
+import { Address } from './address.entity';
 
 @Entity()
 export class Parking extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  address: string;
+  @OneToOne(type => Address, address => address.parking)
+  @JoinColumn()
+  address: Address;
 
   @Column()
+  coordinates: string;
+
+  @Column({ default: false })
   isAvailable: boolean;
 
   @OneToOne(type => User, user => user.parking)

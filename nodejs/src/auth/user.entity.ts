@@ -53,7 +53,7 @@ export class User extends BaseEntity {
   @Column({ nullable: true, name: 'credit_card_number' })
   creditCardNumber: string;
 
-  @Column({ nullable: true, name: 'is_disabled' })
+  @Column({ nullable: true, name: 'is_disabled', default: false })
   isDisabled: boolean;
 
   async validatePassword(password: string): Promise<boolean> {
