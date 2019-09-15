@@ -12,5 +12,5 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   database: process.env.RDS_DB_NAME || dbConfig.database,
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
   synchronize: process.env.TYPEORM_SYNC || dbConfig.synchronize,
-  dropSchema: true,
+  dropSchema: false,
 };

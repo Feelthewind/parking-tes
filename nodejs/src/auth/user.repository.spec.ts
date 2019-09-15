@@ -71,7 +71,7 @@ describe('UserRepository', () => {
       user.validatePassword.mockResolvedValue(true);
 
       const result = await userRepository.validateUserPassword(mockSignInDTO);
-      expect(result).toEqual('test@gmail.com');
+      expect(result).toMatchObject({ email: 'test@gmail.com' });
     });
 
     it('returns null as user cannot be found', async () => {

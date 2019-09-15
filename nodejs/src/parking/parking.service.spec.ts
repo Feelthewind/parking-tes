@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { User } from '../auth/user.entity';
 import { UserRepository } from '../auth/user.repository';
+import { AddressRepository } from './address/address.repository';
 import { OfferRepository } from './offer/offer.repository';
 import { ParkingRepository } from './parking.repository';
 import { ParkingService } from './parking.service';
@@ -20,6 +21,7 @@ describe('ParkingService', () => {
         ParkingService,
         UserRepository,
         OfferRepository,
+        AddressRepository,
         {
           provide: ParkingRepository,
           useValue: mockRepository,

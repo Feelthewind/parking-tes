@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../auth/get-user.decorator';
+import { OwnerGuard } from '../shared/owner.guard';
 import { ValidationPipe } from '../shared/validation.pipe';
 import { CreateParkingDTO } from './dto/create-parking.dto';
 import { Parking } from './parking.entity';
@@ -30,6 +31,7 @@ export class ParkingController {
   }
 
   @Post()
+  @UseGuards(new OwnerGuard())
   async createParking(
     @Body() createParkingDTO: CreateParkingDTO,
     @GetUser() user,
