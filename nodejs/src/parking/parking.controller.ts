@@ -1,11 +1,20 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  UsePipes,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../auth/get-user.decorator';
+import { ValidationPipe } from '../shared/validation.pipe';
 import { CreateParkingDTO } from './dto/create-parking.dto';
 import { Parking } from './parking.entity';
 import { ParkingService } from './parking.service';
 
 @Controller('parking')
+@UsePipes(new ValidationPipe())
 @UseGuards(AuthGuard('jwt'))
 export class ParkingController {
   constructor(private parkingService: ParkingService) {}

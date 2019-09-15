@@ -5,12 +5,12 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Parking } from './parking.entity';
+import { Parking } from '../parking.entity';
 
 @Entity()
 export class Address extends BaseEntity {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column()
   address1: string;

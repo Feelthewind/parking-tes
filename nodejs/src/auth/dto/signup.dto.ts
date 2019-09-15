@@ -3,6 +3,7 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   MaxLength,
   MinLength,
@@ -29,6 +30,7 @@ export class SignUpDTO {
 
   @IsBoolean()
   @IsNotEmpty()
+  @IsOptional()
   isDisabled: boolean;
 
   @IsNotEmpty()

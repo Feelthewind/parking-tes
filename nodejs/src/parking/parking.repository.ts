@@ -4,7 +4,7 @@ import {
 } from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
 import { User } from '../auth/user.entity';
-import { Address } from './address.entity';
+import { Address } from './address/address.entity';
 import { CreateParkingDTO } from './dto/create-parking.dto';
 import { Parking } from './parking.entity';
 
@@ -25,16 +25,20 @@ export class ParkingRepository extends Repository<Parking> {
   async createParking(
     createParkingDTO: CreateParkingDTO,
     user: User,
+    address: Address,
   ): Promise<Parking> {
     const { coordinates, isAvailable } = createParkingDTO;
+
     const parking = this.create();
-    parking.address = new Address();
+    parking.address = address;
     parking.coordinates = coordinates;
-    parking.isAvailable = isAvailable;
+    // parking.isAvailable = isAvailable;
+    parking.isAvailable = false;
     parking.userId = user.id;
     try {
       return await parking.save();
     } catch (error) {
+      console.error(error);
       if (error.code === 'ER_DUP_ENTRY') {
         throw new ConflictException('Address already exists');
       } else {

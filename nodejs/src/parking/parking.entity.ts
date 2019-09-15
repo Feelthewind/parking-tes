@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../auth/user.entity';
-import { Address } from './address.entity';
+import { Address } from './address/address.entity';
 
 @Entity()
 export class Parking extends BaseEntity {
@@ -30,6 +30,9 @@ export class Parking extends BaseEntity {
 
   @Column()
   userId: number;
+
+  @Column()
+  addressId: number;
 
   // @Column({
   //   type: 'geometry',
