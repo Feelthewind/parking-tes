@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { getConnection, Repository } from 'typeorm';
 import { User } from '../auth/user.entity';
 import { UserRepository } from '../auth/user.repository';
-import { Address } from './address/address.entity';
+import { Address } from './address.entity';
 import { CreateParkingDTO } from './dto/create-parking.dto';
 import { OfferRepository } from './offer/offer.repository';
 import { Parking } from './parking.entity';
@@ -35,7 +35,7 @@ export class ParkingService {
     createParkingDTO: CreateParkingDTO,
     user: User,
   ): Promise<Parking> {
-    const { coordinates, isAvailable } = createParkingDTO;
+    const { coordinates, days } = createParkingDTO;
 
     const connection = getConnection();
     const queryRunner = connection.createQueryRunner();
@@ -49,7 +49,7 @@ export class ParkingService {
       let parking = this.parkingRepository.create();
       parking.addressId = newAddress.id;
       parking.coordinates = coordinates;
-      // parking.isAvailable = isAvailable;
+      parking.days = days;
       parking.isAvailable = false;
       parking.userId = user.id;
       parking = await queryRunner.manager.save(parking);

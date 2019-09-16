@@ -1,7 +1,8 @@
 import { Test } from '@nestjs/testing';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../auth/user.entity';
 import { UserRepository } from '../auth/user.repository';
-import { AddressRepository } from './address/address.repository';
+import { Address } from './address.entity';
 import { OfferRepository } from './offer/offer.repository';
 import { ParkingRepository } from './parking.repository';
 import { ParkingService } from './parking.service';
@@ -17,11 +18,11 @@ describe('ParkingService', () => {
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
+      imports: [TypeOrmModule.forFeature([Address])],
       providers: [
         ParkingService,
         UserRepository,
         OfferRepository,
-        AddressRepository,
         {
           provide: ParkingRepository,
           useValue: mockRepository,

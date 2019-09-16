@@ -1,6 +1,14 @@
-import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../auth/user.entity';
-import { Address } from './address/address.entity';
+import { Address } from './address.entity';
+import { DaysDTO } from './dto/days.dto';
 
 @Entity()
 export class Parking extends BaseEntity {
@@ -17,14 +25,17 @@ export class Parking extends BaseEntity {
   @Column({ default: false })
   isAvailable: boolean;
 
+  @Column({ type: 'jsonb' })
+  days: DaysDTO;
+
   @OneToOne(type => User, user => user.parking)
   @JoinColumn()
   user: User;
 
-  @Column({name: 'user_id'})
+  @Column({ name: 'user_id' })
   userId: number;
 
-  @Column({name: 'address_id'})
+  @Column({ name: 'address_id' })
   addressId: number;
 
   // @Column({

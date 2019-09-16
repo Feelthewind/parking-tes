@@ -6,6 +6,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { AddressDTO } from './address.dto';
+import { DaysDTO } from './days.dto';
 
 export class CreateParkingDTO {
   @IsNotEmpty()
@@ -19,4 +20,9 @@ export class CreateParkingDTO {
   @Type(() => AddressDTO)
   @IsNotEmpty()
   readonly address: AddressDTO;
+
+  @ValidateNested({ each: true, always: true })
+  @Type(() => DaysDTO)
+  @IsNotEmpty()
+  days: DaysDTO;
 }

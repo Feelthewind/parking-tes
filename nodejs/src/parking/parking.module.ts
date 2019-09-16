@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from '../auth/user.repository';
-import { Address } from './address/address.entity';
+import { Address } from './address.entity';
 import { OfferRepository } from './offer/offer.repository';
 import { ParkingController } from './parking.controller';
 import { ParkingRepository } from './parking.repository';
