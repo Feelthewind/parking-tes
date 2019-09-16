@@ -13,7 +13,7 @@ export class Timezone extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'int2' })
   day: number;
 
   @Column({ type: 'time' })
@@ -23,9 +23,9 @@ export class Timezone extends BaseEntity {
   to: string;
 
   @ManyToOne(type => Parking, parking => parking.timezones)
-  @JoinColumn()
+  @JoinColumn({ name: 'fk_parking_id' })
   parking: Parking;
 
-  @Column({ name: 'parking_id' })
+  @Column({ name: 'fk_parking_id' })
   parkingId: number;
 }

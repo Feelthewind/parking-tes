@@ -1,34 +1,33 @@
-import { Injectable, NotAcceptableException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotAcceptableException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getConnection, Repository } from 'typeorm';
+import * as moment from 'moment';
+import { Brackets, getConnection, Repository } from 'typeorm';
 import { User } from '../auth/user.entity';
 import { UserRepository } from '../auth/user.repository';
-import { Address } from './address.entity';
 import { CreateParkingDTO } from './dto/create-parking.dto';
+import { Address } from './entity/address.entity';
+import { Parking } from './entity/parking.entity';
+import { Timezone } from './entity/timezone.entity';
 import { OfferRepository } from './offer/offer.repository';
-import { Parking } from './parking.entity';
-import { ParkingRepository } from './parking.repository';
-import { Timezone } from './timezone.entity';
 
 @Injectable()
 export class ParkingService {
   constructor(
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-    @InjectRepository(ParkingRepository)
-    private parkingRepository: ParkingRepository,
     @InjectRepository(OfferRepository)
     private offerRepository: OfferRepository,
+    @InjectRepository(Parking)
+    private parkingRepository: Repository<Parking>,
     @InjectRepository(Address)
     private addressRepository: Repository<Address>,
     @InjectRepository(Timezone)
     private timezoneRepository: Repository<Timezone>,
   ) {}
-
-  // change address to lat, lng later for spatial column
-  async setLocation(lat: number, lng: number, user: User): Promise<void> {
-    await this.parkingRepository.setLocation(lat, lng, user);
-  }
 
   async setAvailable(isAvailable: boolean, user: User) {
     await this.parkingRepository.update({ userId: user.id }, { isAvailable });
@@ -57,12 +56,12 @@ export class ParkingService {
       parking = await queryRunner.manager.save(parking);
 
       const timezonesToSave: Timezone[] = [];
-      for (let i = 0; i < timezones.length; i++) {
+      for (const t of timezones) {
         const timezone = this.timezoneRepository.create();
         timezone.parkingId = parking.id;
-        timezone.day = timezones[i].day;
-        timezone.from = timezones[i].from;
-        timezone.to = timezones[i].to;
+        timezone.day = t.day;
+        timezone.from = t.from;
+        timezone.to = t.to;
         timezonesToSave.push(timezone);
       }
       await queryRunner.manager.save(timezonesToSave);
@@ -72,6 +71,7 @@ export class ParkingService {
     } catch (error) {
       console.error(error);
       await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException();
     } finally {
       await queryRunner.release();
     }
@@ -115,53 +115,51 @@ export class ParkingService {
     }
   }
 
-  async getParkings(): Promise<Parking[]> {
+  async getParkings(interval: number): Promise<Parking[]> {
+    const end = moment().add(interval, 'minutes');
+
+    const endDay = end.day();
+    const endHours = end.hours();
+    const endMinutes = end.minutes();
+    const endTime = `${endHours}:${endMinutes}`;
+
     const date = new Date();
     const day = date.getDay();
     const hours = date.getHours();
     const minutes = date.getMinutes();
+    const startTime = `${hours}:${minutes}`;
 
-    let dayString;
+    const query = this.parkingRepository
+      .createQueryBuilder('parking')
+      .leftJoinAndSelect('parking.timezones', 'timezones');
 
-    switch (day) {
-      case 0:
-        dayString = 'monday';
-        break;
-      case 1:
-        dayString = 'thuesday';
-        break;
-      case 2:
-        dayString = 'wednesday';
-        break;
-      case 3:
-        dayString = 'thursday';
-        break;
-      case 4:
-        dayString = 'friday';
-        break;
-      case 5:
-        dayString = 'saturday';
-        break;
-      case 6:
-        dayString = 'sunday';
-        break;
-      default:
-        console.log('days setting!');
+    if (day === endDay) {
+      return query
+        .andWhere('timezones.day = :day', { day })
+        .andWhere(`timezones.from <= :from`, { from: startTime })
+        .andWhere(`timezones.to >= :to`, { to: startTime })
+        .andWhere(`timezones.from <= :from`, { from: endTime })
+        .andWhere(`timezones.to >= :to`, { to: endTime })
+        .getMany();
     }
 
-    return this.parkingRepository.find({
-      relations: ['address', 'user'],
-    });
-
-    // return this.parkingRepository.find({
-    //   relations: ['address', 'user'],
-    //   where: {
-    //     days: {
-    //       [dayString]: {
-    //         from:
-    //       },
-    //     },
-    //   },
-    // });
+    if (endDay === day + 1) {
+      return query
+        .andWhere(
+          new Brackets(qb => {
+            qb.where(`timezones.day = ${day}`)
+              .andWhere(`timezones.from <= '${startTime}'`)
+              .andWhere(`timezones.to = '24:00'`);
+          }),
+        )
+        .orWhere(
+          new Brackets(qb => {
+            qb.where(`timezones.day = ${endDay}`)
+              .andWhere(`timezones.from = '00:00'`)
+              .andWhere(`timezones.to >= '${endTime}'`);
+          }),
+        )
+        .getMany();
+    }
   }
 }

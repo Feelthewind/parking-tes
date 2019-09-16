@@ -7,7 +7,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../auth/user.entity';
+import { User } from '../../auth/user.entity';
 import { Address } from './address.entity';
 import { Timezone } from './timezone.entity';
 
@@ -16,10 +16,6 @@ export class Parking extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(type => Address, address => address.parking)
-  @JoinColumn()
-  address: Address;
-
   @Column()
   coordinates: string;
 
@@ -27,13 +23,17 @@ export class Parking extends BaseEntity {
   isAvailable: boolean;
 
   @OneToOne(type => User, user => user.parking)
-  @JoinColumn()
+  @JoinColumn({ name: 'fk_user_id' })
   user: User;
 
-  @Column({ name: 'user_id' })
+  @OneToOne(type => Address, address => address.parking)
+  @JoinColumn({ name: 'fk_address_id' })
+  address: Address;
+
+  @Column({ name: 'fk_user_id' })
   userId: number;
 
-  @Column({ name: 'address_id' })
+  @Column({ name: 'fk_address_id' })
   addressId: number;
 
   @OneToMany(type => Timezone, timezone => timezone.parking)

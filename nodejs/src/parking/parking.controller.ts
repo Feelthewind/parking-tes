@@ -16,7 +16,7 @@ import { OwnerGuard } from '../shared/owner.guard';
 import { UserGuard } from '../shared/user.guard';
 import { ValidationPipe } from '../shared/validation.pipe';
 import { CreateParkingDTO } from './dto/create-parking.dto';
-import { Parking } from './parking.entity';
+import { Parking } from './entity/parking.entity';
 import { ParkingService } from './parking.service';
 
 @Controller('parking')
@@ -24,11 +24,6 @@ import { ParkingService } from './parking.service';
 @UseGuards(AuthGuard('jwt'))
 export class ParkingController {
   constructor(private parkingService: ParkingService) {}
-
-  @Patch('/location')
-  async setLocation(@Body() body, @GetUser() user): Promise<void> {
-    return this.parkingService.setLocation(body.lat, body.lng, user);
-  }
 
   @Patch('/available')
   @UseGuards(new OwnerGuard())
@@ -59,7 +54,7 @@ export class ParkingController {
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Get()
-  async getParkings(@Query('duration') duration: number): Promise<Parking[]> {
-    return this.parkingService.getParkings();
+  async getParkings(@Query('interval') interval: number): Promise<Parking[]> {
+    return this.parkingService.getParkings(interval);
   }
 }

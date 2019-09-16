@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../auth/user.entity';
-import { Parking } from '../parking.entity';
+import { Parking } from '../entity/parking.entity';
 
 @Entity()
 export class Offer extends BaseEntity {
@@ -18,10 +18,10 @@ export class Offer extends BaseEntity {
   chosen: boolean;
 
   @ManyToOne(type => Parking)
-  @JoinColumn({ name: 'parking_id' })
+  @JoinColumn({ name: 'fk_parking_id' })
   parkingId: number;
 
   @ManyToOne(type => User)
-  @JoinColumn({ name: 'buyer_id' })
+  @JoinColumn({ name: 'fk_buyer_id' })
   buyerId: number;
 }

@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from '../auth/user.repository';
-import { Address } from './address.entity';
+import { Address } from './entity/address.entity';
+import { Parking } from './entity/parking.entity';
+import { Timezone } from './entity/timezone.entity';
 import { OfferRepository } from './offer/offer.repository';
 import { ParkingController } from './parking.controller';
-import { ParkingRepository } from './parking.repository';
 import { ParkingService } from './parking.service';
-import { Timezone } from './timezone.entity';
 
 @Module({
   imports: [
@@ -17,8 +17,8 @@ import { Timezone } from './timezone.entity';
     // }),
     TypeOrmModule.forFeature([
       UserRepository,
-      ParkingRepository,
       OfferRepository,
+      Parking,
       Address,
       Timezone,
     ]),

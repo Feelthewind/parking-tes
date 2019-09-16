@@ -8,7 +8,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Parking } from '../parking/parking.entity';
+import { Parking } from '../parking/entity/parking.entity';
 import { SocialProvider } from './enum/provider.enum';
 import { UserType } from './enum/user-type.enum';
 
