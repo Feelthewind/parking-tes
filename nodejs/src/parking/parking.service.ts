@@ -8,6 +8,7 @@ import { CreateParkingDTO } from './dto/create-parking.dto';
 import { OfferRepository } from './offer/offer.repository';
 import { Parking } from './parking.entity';
 import { ParkingRepository } from './parking.repository';
+import { Timezone } from './timezone.entity';
 
 @Injectable()
 export class ParkingService {
@@ -20,6 +21,8 @@ export class ParkingService {
     private offerRepository: OfferRepository,
     @InjectRepository(Address)
     private addressRepository: Repository<Address>,
+    @InjectRepository(Timezone)
+    private timezoneRepository: Repository<Timezone>,
   ) {}
 
   // change address to lat, lng later for spatial column
@@ -35,7 +38,7 @@ export class ParkingService {
     createParkingDTO: CreateParkingDTO,
     user: User,
   ): Promise<Parking> {
-    const { coordinates, days } = createParkingDTO;
+    const { coordinates, timezones } = createParkingDTO;
 
     const connection = getConnection();
     const queryRunner = connection.createQueryRunner();
@@ -49,10 +52,21 @@ export class ParkingService {
       let parking = this.parkingRepository.create();
       parking.addressId = newAddress.id;
       parking.coordinates = coordinates;
-      parking.days = days;
       parking.isAvailable = false;
       parking.userId = user.id;
       parking = await queryRunner.manager.save(parking);
+
+      const timezonesToSave: Timezone[] = [];
+      for (let i = 0; i < timezones.length; i++) {
+        const timezone = this.timezoneRepository.create();
+        timezone.parkingId = parking.id;
+        timezone.day = timezones[i].day;
+        timezone.from = timezones[i].from;
+        timezone.to = timezones[i].to;
+        timezonesToSave.push(timezone);
+      }
+      await queryRunner.manager.save(timezonesToSave);
+
       await queryRunner.commitTransaction();
       return parking;
     } catch (error) {
@@ -102,9 +116,52 @@ export class ParkingService {
   }
 
   async getParkings(): Promise<Parking[]> {
-    // return this.parkingRepository.find({ isAvailable: true });
+    const date = new Date();
+    const day = date.getDay();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+
+    let dayString;
+
+    switch (day) {
+      case 0:
+        dayString = 'monday';
+        break;
+      case 1:
+        dayString = 'thuesday';
+        break;
+      case 2:
+        dayString = 'wednesday';
+        break;
+      case 3:
+        dayString = 'thursday';
+        break;
+      case 4:
+        dayString = 'friday';
+        break;
+      case 5:
+        dayString = 'saturday';
+        break;
+      case 6:
+        dayString = 'sunday';
+        break;
+      default:
+        console.log('days setting!');
+    }
+
     return this.parkingRepository.find({
       relations: ['address', 'user'],
     });
+
+    // return this.parkingRepository.find({
+    //   relations: ['address', 'user'],
+    //   where: {
+    //     days: {
+    //       [dayString]: {
+    //         from:
+    //       },
+    //     },
+    //   },
+    // });
   }
 }

@@ -3,12 +3,13 @@ import {
   Column,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../auth/user.entity';
 import { Address } from './address.entity';
-import { DaysDTO } from './dto/days.dto';
+import { Timezone } from './timezone.entity';
 
 @Entity()
 export class Parking extends BaseEntity {
@@ -25,9 +26,6 @@ export class Parking extends BaseEntity {
   @Column({ default: false })
   isAvailable: boolean;
 
-  @Column({ type: 'jsonb' })
-  days: DaysDTO;
-
   @OneToOne(type => User, user => user.parking)
   @JoinColumn()
   user: User;
@@ -37,6 +35,9 @@ export class Parking extends BaseEntity {
 
   @Column({ name: 'address_id' })
   addressId: number;
+
+  @OneToMany(type => Timezone, timezone => timezone.parking)
+  timezones: Timezone[];
 
   // @Column({
   //   type: 'geometry',

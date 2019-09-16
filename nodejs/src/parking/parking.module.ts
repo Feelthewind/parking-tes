@@ -6,6 +6,7 @@ import { OfferRepository } from './offer/offer.repository';
 import { ParkingController } from './parking.controller';
 import { ParkingRepository } from './parking.repository';
 import { ParkingService } from './parking.service';
+import { Timezone } from './timezone.entity';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ParkingService } from './parking.service';
       ParkingRepository,
       OfferRepository,
       Address,
+      Timezone,
     ]),
   ],
   controllers: [ParkingController],

@@ -5,6 +5,7 @@ import {
   Get,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
   UsePipes,
@@ -58,7 +59,7 @@ export class ParkingController {
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Get()
-  async getParkings(): Promise<Parking[]> {
+  async getParkings(@Query('duration') duration: number): Promise<Parking[]> {
     return this.parkingService.getParkings();
   }
 }
