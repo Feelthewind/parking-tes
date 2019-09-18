@@ -55,7 +55,24 @@ export class OrderService {
     //
   }
 
-  async expandOrderTime() {
-    //
+  async extendOrderTime(orderId: number, timeToExtend: string) {
+    const data = timeToExtend.split(':');
+
+    // UPDATE "order" SET "to" = 'order.to' + interval '03 hours 30 minutes' WHERE "id" = $1
+
+    // return getManager().query(
+    //   `UPDATE "order" SET "to" = "to" + interval '${data[0]} hours ${
+    //     data[1]
+    //   } minutes' WHERE id = ${orderId}`,
+    // );
+
+    return this.orderRepository
+      .createQueryBuilder('order')
+      .update()
+      .set({
+        to: () => `"to" + interval '${data[0]} hours ${data[1]} minutes'`, // "to" 여기서 반드시 double quote 사용!!
+      })
+      .where('id = :id', { id: orderId })
+      .execute();
   }
 }

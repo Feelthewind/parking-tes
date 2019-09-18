@@ -30,10 +30,10 @@ export class Order extends BaseEntity {
   @Column()
   fk_buyer_id: number;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamptz' })
   from: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamptz' })
   to: Date;
 
   @Column()

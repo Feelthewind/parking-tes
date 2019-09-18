@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  Patch,
   Post,
   UseGuards,
   UsePipes,
@@ -28,5 +30,13 @@ export class OrderController {
   @Get()
   async getOrderByUser(@GetUser() user) {
     return this.orderService.getOrderByUser(user);
+  }
+
+  @Patch('/extention/:orderId')
+  async extendOrderTime(
+    @Param('orderId') orderId: number,
+    @Body('timeToExtend') timeToExtend: string,
+  ) {
+    return this.orderService.extendOrderTime(orderId, timeToExtend);
   }
 }
