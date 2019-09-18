@@ -1,5 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as schedule from 'node-schedule';
+import { Job } from 'node-schedule';
 import { getManager, Repository } from 'typeorm';
 import { User } from '../auth/user.entity';
 import { Parking } from '../parking/entity/parking.entity';
@@ -16,14 +18,18 @@ export class OrderService {
     private parkingRepository: Repository<Parking>,
   ) {}
 
+  private job: Job;
+
   async createOrder(data: CreateOrderDTO, user: User) {
     try {
+      const { to } = data;
+      let order: Order;
       await getManager().transaction(async manager => {
-        const order = this.orderRepository.create({
+        order = this.orderRepository.create({
           ...data,
           fk_buyer_id: user.id,
         });
-        await manager.save(order);
+        order = await manager.save(order);
         await manager.update(
           Parking,
           { id: data.fk_parking_id },
@@ -31,7 +37,9 @@ export class OrderService {
         );
       });
 
-      // TODO: schedule a job to set the parking as disabled when times out
+      // Schedule a job to set the parking as available when times out
+      const date = new Date(to);
+      this.job = this.scheduleOrder(date, order);
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException();
@@ -75,7 +83,7 @@ export class OrderService {
     //   } minutes' WHERE id = ${orderId}`,
     // );
 
-    return this.orderRepository
+    await this.orderRepository
       .createQueryBuilder('order')
       .update()
       .set({
@@ -83,5 +91,25 @@ export class OrderService {
       })
       .where('id = :id', { id: orderId })
       .execute();
+
+    const order = await this.orderRepository.findOne({ id: orderId });
+    if (this.job.cancel()) {
+      const date = new Date(order.to);
+      this.scheduleOrder(date, order);
+    }
+    return order;
+  }
+
+  private scheduleOrder(date: Date, order: Order): Job {
+    return schedule.scheduleJob(date, async () => {
+      await this.orderRepository.update(
+        { id: order.id },
+        { state: OrderState.FINISHED },
+      );
+      await this.parkingRepository.update(
+        { id: order.fk_parking_id },
+        { isAvailable: true },
+      );
+    });
   }
 }
