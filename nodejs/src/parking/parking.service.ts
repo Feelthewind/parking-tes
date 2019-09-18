@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotAcceptableException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as moment from 'moment';
@@ -115,9 +116,59 @@ export class ParkingService {
     }
   }
 
-  async getParkings(interval: number): Promise<Parking[]> {
-    const end = moment().add(interval, 'minutes');
+  async getTimeToExtend(parkingId: number) {
+    const date = new Date();
+    const day = date.getDay();
+    const nextDay = day + 1;
+    const hours = date.getHours();
+    const hoursLeft = 24 - hours;
+    const minutes = date.getMinutes();
+    const minutesLeft = 60 - minutes;
+    const startTime = `${hours}:${minutes}`;
 
+    const parking = await this.parkingRepository
+      .createQueryBuilder('parking')
+      .leftJoinAndSelect('parking.timezones', 'timezones')
+      .where('parking.id = :id', { id: parkingId })
+      .andWhere(
+        new Brackets(qb => {
+          qb.where(`timezones.day = ${day}`).andWhere(
+            `timezones.from <= :from`,
+            { from: startTime },
+          );
+        }),
+      )
+      .orWhere(
+        new Brackets(qb => {
+          qb.where(`timezones.day = ${nextDay}`).andWhere(
+            `timezones.from = '00:00'`,
+          );
+        }),
+      )
+      .getOne();
+
+    const maxTime = parking.timezones
+      .sort((a, b) => {
+        return b.day - a.day;
+      })[0]
+      .to.split(':');
+
+    const current = moment([hours, minutes], 'HH:mm');
+    const max = moment([maxTime[0], maxTime[1]], 'HH:mm');
+    let result = max.diff(current, 'minutes');
+    if (parking.timezones.length === 2) {
+      result = result + hoursLeft * 60 + minutesLeft;
+    }
+    return result;
+  }
+
+  async getParkings(usageTime: number): Promise<Parking[]> {
+    // 기본 사용시간은 최소 1시간, 최대 8시간
+    if (usageTime && (usageTime < 60 || usageTime > 480)) {
+      throw new UnprocessableEntityException();
+    }
+
+    const end = moment().add(usageTime, 'minutes');
     const endDay = end.day();
     const endHours = end.hours();
     const endMinutes = end.minutes();

@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Param,
   Patch,
   Post,
   Query,
@@ -54,7 +55,12 @@ export class ParkingController {
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Get()
-  async getParkings(@Query('interval') interval: number): Promise<Parking[]> {
-    return this.parkingService.getParkings(interval);
+  async getParkings(@Query('usageTime') usageTime: number): Promise<Parking[]> {
+    return this.parkingService.getParkings(usageTime);
+  }
+
+  @Get('/extension/:parkingId')
+  async getTimeToExtend(@Param('parkingId') parkingId: number) {
+    return this.parkingService.getTimeToExtend(parkingId);
   }
 }
