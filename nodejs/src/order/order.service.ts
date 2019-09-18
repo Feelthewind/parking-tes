@@ -4,6 +4,7 @@ import { getManager, Repository } from 'typeorm';
 import { User } from '../auth/user.entity';
 import { Parking } from '../parking/entity/parking.entity';
 import { CreateOrderDTO } from './dto/create-order.dto';
+import { OrderState } from './enum/order-state.enum';
 import { Order } from './order.entity';
 
 @Injectable()
@@ -51,8 +52,16 @@ export class OrderService {
     }
   }
 
-  async cancelOrder() {
-    //
+  async cancelOrder(orderId: number) {
+    const order = await this.orderRepository.findOne({ id: orderId }); // To get parkingId
+    await this.orderRepository.update(
+      { id: orderId },
+      { state: OrderState.CANCELLED },
+    );
+    await this.parkingRepository.update(
+      { id: order.fk_parking_id },
+      { isAvailable: false },
+    );
   }
 
   async extendOrderTime(orderId: number, timeToExtend: string) {
@@ -70,7 +79,7 @@ export class OrderService {
       .createQueryBuilder('order')
       .update()
       .set({
-        to: () => `"to" + interval '${data[0]} hours ${data[1]} minutes'`, // "to" 여기서 반드시 double quote 사용!!
+        to: () => `"to" + interval '${data[0]} hours ${data[1]} minutes'`, // "to" 여기서 꼭 double quote 사용!!
       })
       .where('id = :id', { id: orderId })
       .execute();

@@ -39,4 +39,9 @@ export class OrderController {
   ) {
     return this.orderService.extendOrderTime(orderId, timeToExtend);
   }
+
+  @Patch('/cancel/:orderId')
+  async cancelOrder(@Param('orderId') orderId: number) {
+    return this.orderService.cancelOrder(orderId);
+  }
 }
