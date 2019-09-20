@@ -16,8 +16,12 @@ export class Parking extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  coordinates: string;
+  @Column('geometry', {
+    nullable: true,
+    spatialFeatureType: 'Point',
+    srid: 4326,
+  })
+  coordinates: object;
 
   @Column({ default: false })
   isAvailable: boolean;

@@ -1,17 +1,14 @@
 import { Type } from 'class-transformer';
-import {
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, ValidateNested } from 'class-validator';
 import { AddressDTO } from './address.dto';
 import { TimezoneDTO } from './timezone.dto';
 
 export class CreateParkingDTO {
   @IsNotEmpty()
-  @IsString()
-  coordinates: string;
+  lat: number;
+
+  @IsNotEmpty()
+  lng: number;
 
   @IsOptional()
   isAvailable: boolean;

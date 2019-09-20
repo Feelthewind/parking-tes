@@ -94,6 +94,7 @@ export class OrderService {
 
     const order = await this.orderRepository.findOne({ id: orderId });
     if (this.job.cancel()) {
+      console.log('cancelled an order and reschedule!');
       const date = new Date(order.to);
       this.scheduleOrder(date, order);
     }

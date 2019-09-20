@@ -10,25 +10,25 @@ import {
   UseGuards,
   UseInterceptors,
   UsePipes,
-} from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { GetUser } from '../auth/get-user.decorator';
-import { OwnerGuard } from '../shared/owner.guard';
-import { UserGuard } from '../shared/user.guard';
-import { ValidationPipe } from '../shared/validation.pipe';
-import { CreateParkingDTO } from './dto/create-parking.dto';
-import { Parking } from './entity/parking.entity';
-import { ParkingService } from './parking.service';
+} from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
+import { GetUser } from "../auth/get-user.decorator";
+import { OwnerGuard } from "../shared/owner.guard";
+import { UserGuard } from "../shared/user.guard";
+import { ValidationPipe } from "../shared/validation.pipe";
+import { CreateParkingDTO } from "./dto/create-parking.dto";
+import { Parking } from "./entity/parking.entity";
+import { ParkingService } from "./parking.service";
 
-@Controller('parking')
+@Controller("parking")
 @UsePipes(new ValidationPipe())
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard("jwt"))
 export class ParkingController {
   constructor(private parkingService: ParkingService) {}
 
-  @Patch('/available')
+  @Patch("/available")
   @UseGuards(new OwnerGuard())
-  async setAvailable(@Body('available') available: boolean, @GetUser() user) {
+  async setAvailable(@Body("available") available: boolean, @GetUser() user) {
     return this.parkingService.setAvailable(available, user);
   }
 
@@ -41,26 +41,38 @@ export class ParkingController {
     return this.parkingService.createParking(createParkingDTO, user);
   }
 
-  @Post('/offer')
+  @Post("/offer")
   @UseGuards(new UserGuard())
-  async createOffer(@Body('parkingId') parkingId: number, @GetUser() user) {
+  async createOffer(@Body("parkingId") parkingId: number, @GetUser() user) {
     return this.parkingService.createOffer(parkingId, user);
   }
 
-  @Post('/offer/accept')
+  @Post("/offer/accept")
   @UseGuards(new OwnerGuard())
-  async acceptOffer(@Body('buyerId') buyerId: number, @GetUser() user) {
+  async acceptOffer(@Body("buyerId") buyerId: number, @GetUser() user) {
     return this.parkingService.acceptOffer(buyerId, user);
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Get()
-  async getParkings(@Query('usageTime') usageTime: number): Promise<Parking[]> {
-    return this.parkingService.getParkings(usageTime);
+  async getParkings(
+    @Query("usageTime") usageTime: number,
+    @Query("lat") lat: number,
+    @Query("lng") lng: number,
+  ): Promise<Parking[]> {
+    return this.parkingService.getParkings(usageTime, lat, lng);
   }
 
-  @Get('/extension/:parkingId')
-  async getTimeToExtend(@Param('parkingId') parkingId: number) {
+  @Get("/extension/:parkingId")
+  async getTimeToExtend(@Param("parkingId") parkingId: number) {
     return this.parkingService.getTimeToExtend(parkingId);
+  }
+
+  @Get("/distance")
+  async getParkingsByDistance(
+    @Query("lat") lat: number,
+    @Query("lng") lng: number,
+  ) {
+    return this.parkingService.getParkingsByDistance(lat, lng);
   }
 }

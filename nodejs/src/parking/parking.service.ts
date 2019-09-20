@@ -3,17 +3,17 @@ import {
   InternalServerErrorException,
   NotAcceptableException,
   UnprocessableEntityException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import * as moment from 'moment';
-import { Brackets, getConnection, Repository } from 'typeorm';
-import { User } from '../auth/user.entity';
-import { UserRepository } from '../auth/user.repository';
-import { CreateParkingDTO } from './dto/create-parking.dto';
-import { Address } from './entity/address.entity';
-import { Parking } from './entity/parking.entity';
-import { Timezone } from './entity/timezone.entity';
-import { OfferRepository } from './offer/offer.repository';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import * as moment from "moment";
+import { Brackets, getConnection, Repository } from "typeorm";
+import { User } from "../auth/user.entity";
+import { UserRepository } from "../auth/user.repository";
+import { CreateParkingDTO } from "./dto/create-parking.dto";
+import { Address } from "./entity/address.entity";
+import { Parking } from "./entity/parking.entity";
+import { Timezone } from "./entity/timezone.entity";
+import { OfferRepository } from "./offer/offer.repository";
 
 @Injectable()
 export class ParkingService {
@@ -38,7 +38,7 @@ export class ParkingService {
     createParkingDTO: CreateParkingDTO,
     user: User,
   ): Promise<Parking> {
-    const { coordinates, timezones } = createParkingDTO;
+    const { lat, lng, timezones } = createParkingDTO;
 
     const connection = getConnection();
     const queryRunner = connection.createQueryRunner();
@@ -51,10 +51,34 @@ export class ParkingService {
 
       let parking = this.parkingRepository.create();
       parking.addressId = newAddress.id;
-      parking.coordinates = coordinates;
+      // INSERT INTO "parking"("coordinates", "isAvailable", "fk_user_id", "fk_address_id") VALUES (ST_SetSRID(ST_GeomFromGeoJSON($1),
+      // 4326)::geography, $2, $3, $4) RETURNING "id", "isAvailable" -- PARAMETERS: ["{\"type\":\"Point\",\"coordinates\":[37.604165,127.
+      // 142494]}",0,1,1]
+      parking.coordinates = {
+        type: "Point",
+        coordinates: [lat, lng],
+      };
       parking.isAvailable = false;
       parking.userId = user.id;
       parking = await queryRunner.manager.save(parking);
+
+      // const result = await queryRunner.manager
+      //   .createQueryBuilder()
+      //   .insert()
+      //   .into(Parking)
+      //   .values({
+      //     isAvailable: false,
+      //     userId: user.id,
+      //     addressId: newAddress.id,
+      //     coordinates: 'ST_SetSRID(ST_MakePoint(:lat, :lng), 4326)::geography',
+      //   })
+      //   .setParameters({
+      //     lat,
+      //     lng,
+      //   })
+      //   .execute();
+
+      // console.dir(result);
 
       const timezonesToSave: Timezone[] = [];
       for (const t of timezones) {
@@ -104,7 +128,7 @@ export class ParkingService {
       parking: { id: parkingId },
     } = await this.userRepository.findOne(
       { id: owner.id },
-      { relations: ['parking'] },
+      { relations: ["parking"] },
     );
     try {
       await this.offerRepository.update(
@@ -127,9 +151,9 @@ export class ParkingService {
     const startTime = `${hours}:${minutes}`;
 
     const parking = await this.parkingRepository
-      .createQueryBuilder('parking')
-      .leftJoinAndSelect('parking.timezones', 'timezones')
-      .where('parking.id = :id', { id: parkingId })
+      .createQueryBuilder("parking")
+      .leftJoinAndSelect("parking.timezones", "timezones")
+      .where("parking.id = :id", { id: parkingId })
       .andWhere(
         new Brackets(qb => {
           qb.where(`timezones.day = ${day}`).andWhere(
@@ -151,24 +175,28 @@ export class ParkingService {
       .sort((a, b) => {
         return b.day - a.day;
       })[0]
-      .to.split(':');
+      .to.split(":");
 
-    const current = moment([hours, minutes], 'HH:mm');
-    const max = moment([maxTime[0], maxTime[1]], 'HH:mm');
-    let result = max.diff(current, 'minutes');
+    const current = moment([hours, minutes], "HH:mm");
+    const max = moment([maxTime[0], maxTime[1]], "HH:mm");
+    let result = max.diff(current, "minutes");
     if (parking.timezones.length === 2) {
       result = result + hoursLeft * 60 + minutesLeft;
     }
     return result;
   }
 
-  async getParkings(usageTime: number): Promise<Parking[]> {
+  async getParkings(
+    usageTime: number,
+    lat: number,
+    lng: number,
+  ): Promise<Parking[]> {
     // 기본 사용시간은 최소 1시간, 최대 8시간
     if (usageTime && (usageTime < 60 || usageTime > 480)) {
       throw new UnprocessableEntityException();
     }
 
-    const end = moment().add(usageTime, 'minutes');
+    const end = moment().add(usageTime, "minutes");
     const endDay = end.day();
     const endHours = end.hours();
     const endMinutes = end.minutes();
@@ -180,13 +208,23 @@ export class ParkingService {
     const minutes = date.getMinutes();
     const startTime = `${hours}:${minutes}`;
 
+    const origin = {
+      type: "Point",
+      coordinates: [lat, lng],
+    };
+
+    // 사용자 위치 기준으로 1km 반경 안의 주차장만 응답에 포함.
     const query = this.parkingRepository
-      .createQueryBuilder('parking')
-      .leftJoinAndSelect('parking.timezones', 'timezones');
+      .createQueryBuilder("parking")
+      .leftJoinAndSelect("parking.timezones", "timezones")
+      .where(
+        "ST_Distance(parking.coordinates, ST_SetSRID(ST_GeomFromGeoJSON(:origin), 4326)) * 111139 < 1000",
+      )
+      .setParameters({ origin: JSON.stringify(origin) });
 
     if (day === endDay) {
       return query
-        .andWhere('timezones.day = :day', { day })
+        .andWhere("timezones.day = :day", { day })
         .andWhere(`timezones.from <= :from`, { from: startTime })
         .andWhere(`timezones.to >= :to`, { to: startTime })
         .andWhere(`timezones.from <= :from`, { from: endTime })
@@ -212,5 +250,37 @@ export class ParkingService {
         )
         .getMany();
     }
+  }
+
+  async getParkingsByDistance(lat, lng) {
+    const origin = {
+      type: "Point",
+      coordinates: [lat, lng],
+    };
+
+    // ST_SetSRID 사용!
+
+    // return getManager().query(
+    //   `SELECT ST_Distance(parking.coordinates, ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(
+    //     origin,
+    //   )}), 4326)) from parking`,
+    // );
+
+    // 111139 to get distance as meters!
+    return (
+      this.parkingRepository
+        .createQueryBuilder("parking")
+        .where(
+          "ST_Distance(parking.coordinates, ST_SetSRID(ST_GeomFromGeoJSON(:origin), 4326)) * 111139 < 1000",
+        )
+        // .orderBy({
+        //   'ST_Distance(parking.coordinates, ST_GeomFromGeoJSON(:origin)': {
+        //     order: 'ASC',
+        //     nulls: 'NULLS FIRST',
+        //   },
+        // })
+        .setParameters({ origin: JSON.stringify(origin) })
+        .getMany()
+    );
   }
 }
