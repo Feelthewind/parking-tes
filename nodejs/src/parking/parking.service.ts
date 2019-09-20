@@ -1,7 +1,6 @@
 import {
   Injectable,
   InternalServerErrorException,
-  NotAcceptableException,
   UnprocessableEntityException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -13,15 +12,12 @@ import { CreateParkingDTO } from "./dto/create-parking.dto";
 import { Address } from "./entity/address.entity";
 import { Parking } from "./entity/parking.entity";
 import { Timezone } from "./entity/timezone.entity";
-import { OfferRepository } from "./offer/offer.repository";
 
 @Injectable()
 export class ParkingService {
   constructor(
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-    @InjectRepository(OfferRepository)
-    private offerRepository: OfferRepository,
     @InjectRepository(Parking)
     private parkingRepository: Repository<Parking>,
     @InjectRepository(Address)
@@ -91,6 +87,12 @@ export class ParkingService {
       }
       await queryRunner.manager.save(timezonesToSave);
 
+      await queryRunner.manager.update(
+        User,
+        { id: user.id },
+        { isSharing: true },
+      );
+
       await queryRunner.commitTransaction();
       return parking;
     } catch (error) {
@@ -106,38 +108,6 @@ export class ParkingService {
     //   user,
     //   newAddress,
     // );
-  }
-
-  async createOffer(parkingId: number, user: User): Promise<void> {
-    const parking = await this.parkingRepository.findOne({ id: parkingId });
-    if (!parking.isAvailable) {
-      throw new NotAcceptableException();
-    }
-    const offer = this.offerRepository.create();
-    offer.buyerId = user.id;
-    offer.parkingId = parkingId;
-    try {
-      await offer.save();
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  async acceptOffer(buyerId: number, owner: User): Promise<void> {
-    const {
-      parking: { id: parkingId },
-    } = await this.userRepository.findOne(
-      { id: owner.id },
-      { relations: ["parking"] },
-    );
-    try {
-      await this.offerRepository.update(
-        { parkingId, buyerId },
-        { chosen: true },
-      );
-    } catch (error) {
-      console.error(error);
-    }
   }
 
   async getTimeToExtend(parkingId: number) {

@@ -1,12 +1,11 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserRepository } from '../auth/user.repository';
-import { Address } from './entity/address.entity';
-import { Parking } from './entity/parking.entity';
-import { Timezone } from './entity/timezone.entity';
-import { OfferRepository } from './offer/offer.repository';
-import { ParkingController } from './parking.controller';
-import { ParkingService } from './parking.service';
+import { Module } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { UserRepository } from "../auth/user.repository";
+import { Address } from "./entity/address.entity";
+import { Parking } from "./entity/parking.entity";
+import { Timezone } from "./entity/timezone.entity";
+import { ParkingController } from "./parking.controller";
+import { ParkingService } from "./parking.service";
 
 @Module({
   imports: [
@@ -15,13 +14,7 @@ import { ParkingService } from './parking.service';
     //   accessType: 'offline',
     //   prompt: 'consent',
     // }),
-    TypeOrmModule.forFeature([
-      UserRepository,
-      OfferRepository,
-      Parking,
-      Address,
-      Timezone,
-    ]),
+    TypeOrmModule.forFeature([UserRepository, Parking, Address, Timezone]),
   ],
   controllers: [ParkingController],
   providers: [ParkingService],

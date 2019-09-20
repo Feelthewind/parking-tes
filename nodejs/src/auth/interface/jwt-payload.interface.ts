@@ -1,9 +1,8 @@
-import { SocialProvider } from '../enum/provider.enum';
-import { UserType } from '../enum/user-type.enum';
+import { SocialProvider } from "../enum/provider.enum";
 
 export interface IJwtPayload {
   email: string;
   provider: SocialProvider;
   thirdPartyID: string;
-  type: UserType;
+  isSharing: boolean;
 }

@@ -2,7 +2,6 @@
 // import { TypeOrmModule } from '@nestjs/typeorm';
 // import { UserRepository } from '../auth/user.repository';
 // import { Address } from './entity/address.entity';
-// import { OfferRepository } from './offer/offer.repository';
 // import { ParkingService } from './parking.service';
 
 // const mockRepository = {
@@ -20,7 +19,6 @@
 //       providers: [
 //         ParkingService,
 //         UserRepository,
-//         OfferRepository,
 //         {
 //           provide: ParkingRepository,
 //           useValue: mockRepository,

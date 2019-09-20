@@ -2,24 +2,24 @@ import {
   ConflictException,
   InternalServerErrorException,
   Logger,
-} from '@nestjs/common';
-import * as bcrypt from 'bcryptjs';
-import { EntityRepository, MoreThan, Repository } from 'typeorm';
-import { SignInDTO } from './dto/signin.dto';
-import { SignUpDTO } from './dto/signup.dto';
-import { SocialProvider } from './enum/provider.enum';
-import { User } from './user.entity';
+} from "@nestjs/common";
+import * as bcrypt from "bcryptjs";
+import { EntityRepository, MoreThan, Repository } from "typeorm";
+import { SignInDTO } from "./dto/signin.dto";
+import { SignUpDTO } from "./dto/signup.dto";
+import { SocialProvider } from "./enum/provider.enum";
+import { User } from "./user.entity";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
-  private logger = new Logger('UserRepository');
+  private logger = new Logger("UserRepository");
 
   async signUp(signUpDTO: SignUpDTO): Promise<void> {
-    const { email, name, password, isDisabled, type } = signUpDTO;
+    const { email, name, password, isDisabled } = signUpDTO;
 
     const found = await this.findOne({ email });
     if (found) {
-      throw new ConflictException('Email already exists');
+      throw new ConflictException("Email already exists");
     }
 
     const user = this.create();
@@ -27,7 +27,6 @@ export class UserRepository extends Repository<User> {
     user.name = name;
     user.salt = await bcrypt.genSalt();
     user.password = await this.hashPassword(password, user.salt);
-    user.type = type;
     user.isDisabled = isDisabled;
 
     try {

@@ -1,5 +1,5 @@
-import * as bcrypt from 'bcryptjs';
-import { Exclude } from 'class-transformer';
+import * as bcrypt from "bcryptjs";
+import { Exclude } from "class-transformer";
 import {
   BaseEntity,
   Column,
@@ -7,10 +7,9 @@ import {
   Index,
   OneToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Parking } from '../parking/entity/parking.entity';
-import { SocialProvider } from './enum/provider.enum';
-import { UserType } from './enum/user-type.enum';
+} from "typeorm";
+import { Parking } from "../parking/entity/parking.entity";
+import { SocialProvider } from "./enum/provider.enum";
 
 @Entity()
 export class User extends BaseEntity {
@@ -32,16 +31,16 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   email: string;
 
-  @Column({ nullable: true })
-  type: UserType;
+  @Column({ nullable: true, name: "is_sharing", default: false })
+  isSharing: boolean;
 
-  @Column({ nullable: true, name: 'img_url' })
+  @Column({ nullable: true, name: "img_url" })
   imgURL: string;
 
-  @Column({ nullable: true, name: 'reset_password_token' })
+  @Column({ nullable: true, name: "reset_password_token" })
   resetPasswordToken: string;
 
-  @Column({ type: 'bigint', nullable: true, name: 'reset_password_expires' })
+  @Column({ type: "bigint", nullable: true, name: "reset_password_expires" })
   resetPasswordExpires: number;
 
   @OneToOne(type => Parking, parking => parking.user)
@@ -50,13 +49,13 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   provider: SocialProvider;
 
-  @Column({ nullable: true, name: 'third_party_id' })
+  @Column({ nullable: true, name: "third_party_id" })
   thirdPartyID: string;
 
-  @Column({ nullable: true, name: 'credit_card_number' })
+  @Column({ nullable: true, name: "credit_card_number" })
   creditCardNumber: string;
 
-  @Column({ nullable: true, name: 'is_disabled', default: false })
+  @Column({ nullable: true, name: "is_disabled", default: false })
   isDisabled: boolean;
 
   async validatePassword(password: string): Promise<boolean> {

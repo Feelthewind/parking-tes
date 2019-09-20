@@ -1,14 +1,12 @@
 import {
   IsBoolean,
   IsEmail,
-  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   MaxLength,
   MinLength,
-} from 'class-validator';
-import { UserType } from '../enum/user-type.enum';
+} from "class-validator";
 
 export class SignUpDTO {
   @MaxLength(100)
@@ -32,8 +30,4 @@ export class SignUpDTO {
   @IsNotEmpty()
   @IsOptional()
   isDisabled: boolean;
-
-  @IsNotEmpty()
-  @IsEnum(UserType)
-  type: UserType;
 }

@@ -6,10 +6,10 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { User } from '../auth/user.entity';
-import { Parking } from '../parking/entity/parking.entity';
-import { OrderState } from './enum/order-state.enum';
+} from "typeorm";
+import { User } from "../auth/user.entity";
+import { Parking } from "../parking/entity/parking.entity";
+import { OrderState } from "./enum/order-state.enum";
 
 @Entity()
 export class Order extends BaseEntity {
@@ -17,11 +17,11 @@ export class Order extends BaseEntity {
   id: number;
 
   @ManyToOne(type => Parking)
-  @JoinColumn({ name: 'fk_parking_id' })
+  @JoinColumn({ name: "fk_parking_id" })
   parking: Parking;
 
   @ManyToOne(type => User)
-  @JoinColumn({ name: 'fk_buyer_id' })
+  @JoinColumn({ name: "fk_buyer_id" })
   buyer: User;
 
   @Column()
@@ -30,16 +30,16 @@ export class Order extends BaseEntity {
   @Column()
   fk_buyer_id: number;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: "timestamptz" })
   from: Date;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: "timestamptz" })
   to: Date;
 
-  @Column()
+  @Column({ default: OrderState.IN_USE })
   state: OrderState;
 
-  @Column({ type: 'timestamp', name: 'created_at' })
+  @Column({ type: "timestamp", name: "created_at" })
   @CreateDateColumn()
   createdAt: Date;
 }

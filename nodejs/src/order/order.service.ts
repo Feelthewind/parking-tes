@@ -1,13 +1,16 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import * as schedule from 'node-schedule';
-import { Job } from 'node-schedule';
-import { getManager, Repository } from 'typeorm';
-import { User } from '../auth/user.entity';
-import { Parking } from '../parking/entity/parking.entity';
-import { CreateOrderDTO } from './dto/create-order.dto';
-import { OrderState } from './enum/order-state.enum';
-import { Order } from './order.entity';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import * as schedule from "node-schedule";
+import { getManager, Repository } from "typeorm";
+import { User } from "../auth/user.entity";
+import { Parking } from "../parking/entity/parking.entity";
+import { CreateOrderDTO } from "./dto/create-order.dto";
+import { OrderState } from "./enum/order-state.enum";
+import { Order } from "./order.entity";
 
 @Injectable()
 export class OrderService {
@@ -18,9 +21,20 @@ export class OrderService {
     private parkingRepository: Repository<Parking>,
   ) {}
 
-  private job: Job;
-
   async createOrder(data: CreateOrderDTO, user: User) {
+    // TODO: check if timezone is correct from dto
+
+    // Check if the one who make this call is the same as the one who made the parking => error
+    const { fk_parking_id } = data;
+    const parking = await this.parkingRepository.findOne({
+      id: fk_parking_id,
+    });
+    if (parking.userId === user.id) {
+      throw new BadRequestException(
+        "자신이 공유한 주차장은 구매할 수 없습니다.",
+      );
+    }
+
     try {
       const { to } = data;
       let order: Order;
@@ -39,7 +53,10 @@ export class OrderService {
 
       // Schedule a job to set the parking as available when times out
       const date = new Date(to);
-      this.job = this.scheduleOrder(date, order);
+      console.log(to);
+      this.scheduleOrder(date, order);
+
+      // TODO: Save job to reschedule when server restarts.
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException();
@@ -49,14 +66,15 @@ export class OrderService {
   async getOrderByUser(user: User) {
     try {
       return this.orderRepository
-        .createQueryBuilder('order')
-        .innerJoinAndSelect('order.parking', 'parking')
-        .innerJoin('order.buyer', 'user')
-        .where('user.id = :id', { id: user.id })
-        .orderBy('order.createdAt', 'DESC')
+        .createQueryBuilder("order")
+        .innerJoinAndSelect("order.parking", "parking")
+        .innerJoin("order.buyer", "user")
+        .where("user.id = :id", { id: user.id })
+        .orderBy("order.createdAt", "DESC")
         .getOne();
     } catch (error) {
       console.error(error);
+      throw new InternalServerErrorException();
     }
   }
 
@@ -70,10 +88,14 @@ export class OrderService {
       { id: order.fk_parking_id },
       { isAvailable: false },
     );
+    const job = schedule.scheduledJobs[orderId];
+    if (job) {
+      job.cancel();
+    }
   }
 
   async extendOrderTime(orderId: number, timeToExtend: string) {
-    const data = timeToExtend.split(':');
+    const data = timeToExtend.split(":");
 
     // UPDATE "order" SET "to" = 'order.to' + interval '03 hours 30 minutes' WHERE "id" = $1
 
@@ -84,25 +106,40 @@ export class OrderService {
     // );
 
     await this.orderRepository
-      .createQueryBuilder('order')
+      .createQueryBuilder("order")
       .update()
       .set({
         to: () => `"to" + interval '${data[0]} hours ${data[1]} minutes'`, // "to" 여기서 꼭 double quote 사용!!
       })
-      .where('id = :id', { id: orderId })
+      .where("id = :id", { id: orderId })
       .execute();
 
     const order = await this.orderRepository.findOne({ id: orderId });
-    if (this.job.cancel()) {
-      console.log('cancelled an order and reschedule!');
+    const job = schedule.scheduledJobs[orderId];
+    if (job && job.cancel()) {
+      console.log("cancelled an order and reschedule!");
       const date = new Date(order.to);
       this.scheduleOrder(date, order);
     }
     return order;
   }
 
-  private scheduleOrder(date: Date, order: Order): Job {
-    return schedule.scheduleJob(date, async () => {
+  async checkOrder() {
+    try {
+      const orders = await this.orderRepository.find({
+        state: OrderState.IN_USE,
+      });
+      for (const order of orders) {
+        const date = new Date(order.to);
+        this.scheduleOrder(date, order);
+      }
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+  }
+
+  private scheduleOrder(date: Date, order: Order) {
+    return schedule.scheduleJob(order.id.toString(), date, async () => {
       await this.orderRepository.update(
         { id: order.id },
         { state: OrderState.FINISHED },
