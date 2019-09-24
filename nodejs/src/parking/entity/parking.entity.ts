@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { User } from "../../auth/user.entity";
+import { ParkingRO } from "../dto/parking.ro";
 import { Timezone } from "./timezone.entity";
 
 @Entity()
@@ -20,7 +21,7 @@ export class Parking extends BaseEntity {
     spatialFeatureType: "Point",
     srid: 4326,
   })
-  coordinates: object;
+  coordinates: Coordinates;
 
   @Column({ default: false })
   isAvailable: boolean;
@@ -49,4 +50,19 @@ export class Parking extends BaseEntity {
   // })
   // @Index({ spatial: true })
   // coordinates: string;
+
+  toResponseObject() {
+    const { id, isAvailable } = this;
+    const responseObject: ParkingRO = {
+      id,
+      isAvailable,
+      coordinates: this.coordinates.coordinates,
+    };
+    return responseObject;
+  }
+}
+
+interface Coordinates {
+  type: string;
+  coordinates: number[];
 }

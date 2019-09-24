@@ -154,12 +154,14 @@ export class ParkingService {
     xmax: number,
     ymax: number,
   ) {
-    return this.parkingRepository
+    const parkings = await this.parkingRepository
       .createQueryBuilder("parking")
       .where(
         `ST_Contains(ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 4326), parking.coordinates)`,
       )
       .getMany();
+
+    return parkings.map(parking => parking.toResponseObject());
   }
 
   async getParkingsByClusters(
