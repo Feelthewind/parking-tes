@@ -5,6 +5,7 @@ export class ParkingRO {
   id: number;
   isAvailable: boolean;
   coordinates: number[];
+  price: number;
   timezones?: TimezoneRO[];
   owner?: UserRO;
 }

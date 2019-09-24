@@ -72,12 +72,12 @@ export class ParkingController {
   }
 
   @Get("/clustering")
-  getParkingsByClusters(
+  getParkingsByClustering(
     @Query("xmin") xmin: number,
     @Query("ymin") ymin: number,
     @Query("xmax") xmax: number,
     @Query("ymax") ymax: number,
   ) {
-    return this.parkingService.getParkingsByClusters(xmin, ymin, xmax, ymax);
+    return this.parkingService.getParkingsByClustering(xmin, ymin, xmax, ymax);
   }
 }

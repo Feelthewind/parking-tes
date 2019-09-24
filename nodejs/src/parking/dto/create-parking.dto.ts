@@ -12,6 +12,9 @@ export class CreateParkingDTO {
   @IsOptional()
   isAvailable: boolean;
 
+  @IsNotEmpty()
+  price: number;
+
   // @ValidateNested({ each: true, always: true })
   // @Type(() => AddressDTO)
   // @IsNotEmpty()

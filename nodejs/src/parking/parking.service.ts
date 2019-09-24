@@ -31,7 +31,7 @@ export class ParkingService {
     createParkingDTO: CreateParkingDTO,
     user: User,
   ): Promise<Parking> {
-    const { lat, lng, timezones } = createParkingDTO;
+    const { lat, lng, timezones, price } = createParkingDTO;
 
     const connection = getConnection();
     const queryRunner = connection.createQueryRunner();
@@ -47,6 +47,7 @@ export class ParkingService {
         coordinates: [lat, lng],
       };
       parking.isAvailable = false;
+      parking.price = price;
       parking.userId = user.id;
       parking = await queryRunner.manager.save(parking);
 
@@ -166,7 +167,7 @@ export class ParkingService {
     return parkings.map(parking => parking.toResponseObject());
   }
 
-  async getParkingsByClusters(
+  async getParkingsByClustering(
     xmin: number,
     ymin: number,
     xmax: number,
@@ -181,14 +182,21 @@ export class ParkingService {
         `ST_Contains(ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 4326), parking.coordinates)`,
       );
 
-    return this.parkingRepository
+    // ST_AsGeoJSON("parking"."coordinates")::json
+
+    const clusters = await this.parkingRepository
       .createQueryBuilder()
       .select(
-        "usr.kmean, count(*), ST_AsText(ST_Centroid(ST_SetSRID(ST_Extent(geom), 4326))) as center",
+        "usr.kmean, count(*), ST_AsGeoJSON(ST_Centroid(ST_SetSRID(ST_Extent(geom), 4326)))::json as center",
       )
       .from("(" + userQb.getQuery() + ")", "usr")
       .groupBy("usr.kmean")
       .getRawMany();
+
+    return clusters.map(cluster => ({
+      count: cluster.count,
+      center: cluster.center.coordinates,
+    }));
   }
 
   async getParkings(

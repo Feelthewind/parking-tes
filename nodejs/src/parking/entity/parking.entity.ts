@@ -26,6 +26,9 @@ export class Parking extends BaseEntity {
   @Column({ default: false })
   isAvailable: boolean;
 
+  @Column({ type: "money" })
+  price: number;
+
   @OneToOne(type => User, user => user.parking)
   @JoinColumn({ name: "fk_user_id" })
   user: User;
@@ -52,10 +55,11 @@ export class Parking extends BaseEntity {
   // coordinates: string;
 
   toResponseObject() {
-    const { id, isAvailable } = this;
+    const { id, isAvailable, price } = this;
     const responseObject: ParkingRO = {
       id,
       isAvailable,
+      price,
       coordinates: this.coordinates.coordinates,
     };
     if (this.timezones) {
