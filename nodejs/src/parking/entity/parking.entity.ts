@@ -6,19 +6,18 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { User } from '../../auth/user.entity';
-import { Address } from './address.entity';
-import { Timezone } from './timezone.entity';
+} from "typeorm";
+import { User } from "../../auth/user.entity";
+import { Timezone } from "./timezone.entity";
 
 @Entity()
 export class Parking extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('geometry', {
+  @Column("geometry", {
     nullable: true,
-    spatialFeatureType: 'Point',
+    spatialFeatureType: "Point",
     srid: 4326,
   })
   coordinates: object;
@@ -27,18 +26,18 @@ export class Parking extends BaseEntity {
   isAvailable: boolean;
 
   @OneToOne(type => User, user => user.parking)
-  @JoinColumn({ name: 'fk_user_id' })
+  @JoinColumn({ name: "fk_user_id" })
   user: User;
 
-  @OneToOne(type => Address, address => address.parking)
-  @JoinColumn({ name: 'fk_address_id' })
-  address: Address;
+  // @OneToOne(type => Address, address => address.parking)
+  // @JoinColumn({ name: 'fk_address_id' })
+  // address: Address;
 
-  @Column({ name: 'fk_user_id' })
+  @Column({ name: "fk_user_id" })
   userId: number;
 
-  @Column({ name: 'fk_address_id' })
-  addressId: number;
+  // @Column({ name: 'fk_address_id' })
+  // addressId: number;
 
   @OneToMany(type => Timezone, timezone => timezone.parking)
   timezones: Timezone[];

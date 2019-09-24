@@ -11,7 +11,6 @@ import {
   UseInterceptors,
   UsePipes,
 } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
 import { GetUser } from "../auth/get-user.decorator";
 import { OwnerGuard } from "../shared/owner.guard";
 import { ValidationPipe } from "../shared/validation.pipe";
@@ -21,7 +20,7 @@ import { ParkingService } from "./parking.service";
 
 @Controller("parking")
 @UsePipes(new ValidationPipe())
-@UseGuards(AuthGuard("jwt"))
+// @UseGuards(AuthGuard("jwt"))
 export class ParkingController {
   constructor(private parkingService: ParkingService) {}
 
@@ -60,5 +59,25 @@ export class ParkingController {
     @Query("lng") lng: number,
   ) {
     return this.parkingService.getParkingsByDistance(lat, lng);
+  }
+
+  @Get("/bounds")
+  async getParkingsByBounds(
+    @Query("xmin") xmin: number,
+    @Query("ymin") ymin: number,
+    @Query("xmax") xmax: number,
+    @Query("ymax") ymax: number,
+  ) {
+    return this.parkingService.getParkingsByBounds(xmin, ymin, xmax, ymax);
+  }
+
+  @Get("/clustering")
+  getParkingsByClusters(
+    @Query("xmin") xmin: number,
+    @Query("ymin") ymin: number,
+    @Query("xmax") xmax: number,
+    @Query("ymax") ymax: number,
+  ) {
+    return this.parkingService.getParkingsByClusters(xmin, ymin, xmax, ymax);
   }
 }

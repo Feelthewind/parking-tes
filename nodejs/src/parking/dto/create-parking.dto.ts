@@ -1,7 +1,6 @@
-import { Type } from 'class-transformer';
-import { IsNotEmpty, IsOptional, ValidateNested } from 'class-validator';
-import { AddressDTO } from './address.dto';
-import { TimezoneDTO } from './timezone.dto';
+import { Type } from "class-transformer";
+import { IsNotEmpty, IsOptional, ValidateNested } from "class-validator";
+import { TimezoneDTO } from "./timezone.dto";
 
 export class CreateParkingDTO {
   @IsNotEmpty()
@@ -13,10 +12,10 @@ export class CreateParkingDTO {
   @IsOptional()
   isAvailable: boolean;
 
-  @ValidateNested({ each: true, always: true })
-  @Type(() => AddressDTO)
-  @IsNotEmpty()
-  readonly address: AddressDTO;
+  // @ValidateNested({ each: true, always: true })
+  // @Type(() => AddressDTO)
+  // @IsNotEmpty()
+  // readonly address: AddressDTO;
 
   @ValidateNested({ each: true, always: true })
   @Type(() => TimezoneDTO)

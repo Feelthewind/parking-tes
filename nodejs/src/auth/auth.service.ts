@@ -30,8 +30,17 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  signUp(signUpDTO: SignUpDTO): Promise<void> {
-    return this.userRepository.signUp(signUpDTO);
+  async signUp(signUpDTO: SignUpDTO): Promise<{ accessToken: string }> {
+    const user = await this.userRepository.signUp(signUpDTO);
+
+    const { email } = user;
+    const payload: Partial<IJwtPayload> = { email };
+    const accessToken = await this.jwtService.sign(payload);
+    this.logger.debug(
+      `Generated JWT Token with payload ${JSON.stringify(payload)}`,
+    );
+
+    return { accessToken };
   }
 
   async signIn(signInDTO: SignInDTO): Promise<{ accessToken: string }> {

@@ -14,7 +14,7 @@ import { User } from "./user.entity";
 export class UserRepository extends Repository<User> {
   private logger = new Logger("UserRepository");
 
-  async signUp(signUpDTO: SignUpDTO): Promise<void> {
+  async signUp(signUpDTO: SignUpDTO): Promise<User> {
     const { email, name, password, isDisabled } = signUpDTO;
 
     const found = await this.findOne({ email });
@@ -30,7 +30,7 @@ export class UserRepository extends Repository<User> {
     user.isDisabled = isDisabled;
 
     try {
-      await user.save();
+      return user.save();
     } catch (error) {
       this.logger.error(error);
       // if (error.code === 'ER_DUP_ENTRY') {

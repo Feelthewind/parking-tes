@@ -9,7 +9,6 @@ import { Brackets, getConnection, Repository } from "typeorm";
 import { User } from "../auth/user.entity";
 import { UserRepository } from "../auth/user.repository";
 import { CreateParkingDTO } from "./dto/create-parking.dto";
-import { Address } from "./entity/address.entity";
 import { Parking } from "./entity/parking.entity";
 import { Timezone } from "./entity/timezone.entity";
 
@@ -20,8 +19,6 @@ export class ParkingService {
     private userRepository: UserRepository,
     @InjectRepository(Parking)
     private parkingRepository: Repository<Parking>,
-    @InjectRepository(Address)
-    private addressRepository: Repository<Address>,
     @InjectRepository(Timezone)
     private timezoneRepository: Repository<Timezone>,
   ) {}
@@ -41,12 +38,7 @@ export class ParkingService {
     await queryRunner.startTransaction();
 
     try {
-      const { address } = createParkingDTO;
-      let newAddress = this.addressRepository.create(address);
-      newAddress = await queryRunner.manager.save(newAddress);
-
       let parking = this.parkingRepository.create();
-      parking.addressId = newAddress.id;
       // INSERT INTO "parking"("coordinates", "isAvailable", "fk_user_id", "fk_address_id") VALUES (ST_SetSRID(ST_GeomFromGeoJSON($1),
       // 4326)::geography, $2, $3, $4) RETURNING "id", "isAvailable" -- PARAMETERS: ["{\"type\":\"Point\",\"coordinates\":[37.604165,127.
       // 142494]}",0,1,1]
@@ -154,6 +146,45 @@ export class ParkingService {
       result = result + hoursLeft * 60 + minutesLeft;
     }
     return result;
+  }
+
+  async getParkingsByBounds(
+    xmin: number,
+    ymin: number,
+    xmax: number,
+    ymax: number,
+  ) {
+    return this.parkingRepository
+      .createQueryBuilder("parking")
+      .where(
+        `ST_Contains(ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 4326), parking.coordinates)`,
+      )
+      .getMany();
+  }
+
+  async getParkingsByClusters(
+    xmin: number,
+    ymin: number,
+    xmax: number,
+    ymax: number,
+  ) {
+    const userQb = this.parkingRepository
+      .createQueryBuilder("parking")
+      .select(
+        `ST_ClusterKMeans(parking.coordinates, 5) OVER() AS kmean, ST_Centroid(parking.coordinates) as geom`,
+      )
+      .where(
+        `ST_Contains(ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 4326), parking.coordinates)`,
+      );
+
+    return this.parkingRepository
+      .createQueryBuilder()
+      .select(
+        "usr.kmean, count(*), ST_AsText(ST_Centroid(ST_SetSRID(ST_Extent(geom), 4326))) as center",
+      )
+      .from("(" + userQb.getQuery() + ")", "usr")
+      .groupBy("usr.kmean")
+      .getRawMany();
   }
 
   async getParkings(
