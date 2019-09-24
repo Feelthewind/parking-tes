@@ -156,6 +156,8 @@ export class ParkingService {
   ) {
     const parkings = await this.parkingRepository
       .createQueryBuilder("parking")
+      .leftJoinAndSelect("parking.timezones", "timezones")
+      .leftJoinAndSelect("parking.user", "user")
       .where(
         `ST_Contains(ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 4326), parking.coordinates)`,
       )

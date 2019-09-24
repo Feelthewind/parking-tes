@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Parking } from "../parking/entity/parking.entity";
+import { UserRO } from "./dto/user.ro";
 import { SocialProvider } from "./enum/provider.enum";
 
 @Entity()
@@ -61,5 +62,17 @@ export class User extends BaseEntity {
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);
     return hash === this.password;
+  }
+
+  toResponseObject() {
+    const { id, name, isSharing, imgURL, isDisabled } = this;
+    const responseObject: UserRO = {
+      id,
+      name,
+      isDisabled,
+      isSharing,
+      imgURL,
+    };
+    return responseObject;
   }
 }

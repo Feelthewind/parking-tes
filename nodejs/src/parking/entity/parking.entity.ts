@@ -58,6 +58,12 @@ export class Parking extends BaseEntity {
       isAvailable,
       coordinates: this.coordinates.coordinates,
     };
+    if (this.timezones) {
+      responseObject.timezones = this.timezones.map(t => t.toResponseObject());
+    }
+    if (this.user) {
+      responseObject.owner = this.user.toResponseObject();
+    }
     return responseObject;
   }
 }
