@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   UsePipes,
 } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 import { GetUser } from "../auth/get-user.decorator";
 import { OwnerGuard } from "../shared/owner.guard";
 import { ValidationPipe } from "../shared/validation.pipe";
@@ -20,17 +21,18 @@ import { ParkingService } from "./parking.service";
 
 @Controller("parking")
 @UsePipes(new ValidationPipe())
-// @UseGuards(AuthGuard("jwt"))
 export class ParkingController {
   constructor(private parkingService: ParkingService) {}
 
   @Patch("/available")
+  @UseGuards(AuthGuard("jwt"))
   @UseGuards(new OwnerGuard())
   async setAvailable(@Body("available") available: boolean, @GetUser() user) {
     return this.parkingService.setAvailable(available, user);
   }
 
   @Post()
+  @UseGuards(AuthGuard("jwt"))
   async createParking(
     @Body() createParkingDTO: CreateParkingDTO,
     @GetUser() user,

@@ -30,12 +30,27 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  async socialLogin(provider: SocialProvider, id: string) {
+    let user = await this.userRepository.create();
+    user.provider = provider;
+    user.thirdPartyID = id;
+    user = await user.save();
+
+    const payload: Partial<IJwtPayload> = { provider };
+    const accessToken = this.jwtService.sign(payload);
+    this.logger.debug(
+      `Generated JWT Token with payload ${JSON.stringify(payload)}`,
+    );
+
+    return { accessToken };
+  }
+
   async signUp(signUpDTO: SignUpDTO): Promise<{ accessToken: string }> {
     const user = await this.userRepository.signUp(signUpDTO);
 
     const { email } = user;
     const payload: Partial<IJwtPayload> = { email };
-    const accessToken = await this.jwtService.sign(payload);
+    const accessToken = this.jwtService.sign(payload);
     this.logger.debug(
       `Generated JWT Token with payload ${JSON.stringify(payload)}`,
     );

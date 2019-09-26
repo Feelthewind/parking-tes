@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  UnprocessableEntityException,
-} from "@nestjs/common";
+import { Injectable, InternalServerErrorException, UnprocessableEntityException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as moment from "moment";
 import { Brackets, getConnection, Repository } from "typeorm";
@@ -194,9 +190,9 @@ export class ParkingService {
       .getRawMany();
 
     return clusters.map(cluster => ({
-      count: cluster.count,
-      center: cluster.center.coordinates,
-    }));
+        count: cluster.count,
+        center: cluster.center.coordinates,
+      }));
   }
 
   async getParkings(

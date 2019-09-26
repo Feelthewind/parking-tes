@@ -20,6 +20,7 @@ import { ChangePasswordDTO } from "./dto/change-password.dto";
 import { SignInDTO } from "./dto/signin.dto";
 import { SignUpDTO } from "./dto/signUp.dto";
 import { UpdateUserDTO } from "./dto/update-user.dto";
+import { SocialProvider } from "./enum/provider.enum";
 import { GetUser } from "./get-user.decorator";
 import { User } from "./user.entity";
 
@@ -39,6 +40,14 @@ export class AuthController {
   @Post("/signin")
   signIn(@Body() signInDTO: SignInDTO): Promise<{ accessToken: string }> {
     return this.authService.signIn(signInDTO);
+  }
+
+  @Post("/social-login")
+  socialLogin(
+    @Body("provider") provider: SocialProvider,
+    @Body("id") id: string,
+  ): Promise<{ accessToken: string }> {
+    return this.authService.socialLogin(provider, id);
   }
 
   @Get("google")
