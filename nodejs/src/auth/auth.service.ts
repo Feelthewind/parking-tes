@@ -31,12 +31,19 @@ export class AuthService {
   ) {}
 
   async socialLogin(provider: SocialProvider, id: string) {
-    let user = await this.userRepository.create();
-    user.provider = provider;
-    user.thirdPartyID = id;
-    user = await user.save();
+    let user = await this.userRepository.findOne({
+      provider,
+      thirdPartyID: id,
+    });
 
-    const payload: Partial<IJwtPayload> = { provider };
+    if (!user) {
+      user = await this.userRepository.create();
+      user.provider = provider;
+      user.thirdPartyID = id;
+      user = await user.save();
+    }
+
+    const payload: Partial<IJwtPayload> = { provider, thirdPartyID: id };
     const accessToken = this.jwtService.sign(payload);
     this.logger.debug(
       `Generated JWT Token with payload ${JSON.stringify(payload)}`,

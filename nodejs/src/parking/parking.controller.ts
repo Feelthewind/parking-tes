@@ -7,14 +7,17 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
   UsePipes,
+  ValidationPipe,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { GetUser } from "../auth/get-user.decorator";
+import { User } from "../auth/user.entity";
 import { OwnerGuard } from "../shared/owner.guard";
-import { ValidationPipe } from "../shared/validation.pipe";
 import { CreateParkingDTO } from "./dto/create-parking.dto";
 import { Parking } from "./entity/parking.entity";
 import { ParkingService } from "./parking.service";
@@ -64,6 +67,7 @@ export class ParkingController {
   }
 
   @Get("/bounds")
+  // @UseGuards(AuthGuard("jwt"))
   async getParkingsByBounds(
     @Query("xmin") xmin: number,
     @Query("ymin") ymin: number,
@@ -74,6 +78,7 @@ export class ParkingController {
   }
 
   @Get("/clustering")
+  // @UseGuards(AuthGuard("jwt"))
   getParkingsByClustering(
     @Query("xmin") xmin: number,
     @Query("ymin") ymin: number,
@@ -81,5 +86,14 @@ export class ParkingController {
     @Query("ymax") ymax: number,
   ) {
     return this.parkingService.getParkingsByClustering(xmin, ymin, xmax, ymax);
+  }
+
+  @Post("/images")
+  @UseInterceptors(FileInterceptor("files"))
+  uploadProfileImage(@UploadedFile() file, @GetUser() user: User) {
+    console.log(file);
+    return {
+      url: `/img/${file.filename}`,
+    };
   }
 }
