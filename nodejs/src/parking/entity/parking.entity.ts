@@ -9,6 +9,7 @@ import {
 } from "typeorm";
 import { User } from "../../auth/user.entity";
 import { ParkingRO } from "../dto/parking.ro";
+import { ParkingImage } from "./parkingImage.entity";
 import { Timezone } from "./timezone.entity";
 
 @Entity()
@@ -53,6 +54,9 @@ export class Parking extends BaseEntity {
   // })
   // @Index({ spatial: true })
   // coordinates: string;
+
+  @OneToMany(type => ParkingImage, images => images.parking)
+  images: ParkingImage[];
 
   toResponseObject() {
     const { id, isAvailable, price } = this;

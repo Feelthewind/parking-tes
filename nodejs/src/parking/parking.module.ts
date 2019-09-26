@@ -5,6 +5,7 @@ import { diskStorage } from "multer";
 import * as path from "path";
 import { UserRepository } from "../auth/user.repository";
 import { Parking } from "./entity/parking.entity";
+import { ParkingImage } from "./entity/parkingImage.entity";
 import { Timezone } from "./entity/timezone.entity";
 import { ParkingController } from "./parking.controller";
 import { ParkingService } from "./parking.service";
@@ -16,7 +17,7 @@ import { ParkingService } from "./parking.service";
     //   accessType: 'offline',
     //   prompt: 'consent',
     // }),
-    TypeOrmModule.forFeature([UserRepository, Parking, Timezone]),
+    TypeOrmModule.forFeature([UserRepository, Parking, Timezone, ParkingImage]),
     MulterModule.register({
       limits: { fileSize: 5 * 1024 * 1024 },
       storage: diskStorage({

@@ -10,6 +10,7 @@ import { User } from "../auth/user.entity";
 import { UserRepository } from "../auth/user.repository";
 import { CreateParkingDTO } from "./dto/create-parking.dto";
 import { Parking } from "./entity/parking.entity";
+import { ParkingImage } from "./entity/parkingImage.entity";
 import { Timezone } from "./entity/timezone.entity";
 
 @Injectable()
@@ -21,6 +22,8 @@ export class ParkingService {
     private parkingRepository: Repository<Parking>,
     @InjectRepository(Timezone)
     private timezoneRepository: Repository<Timezone>,
+    @InjectRepository(ParkingImage)
+    private imageRepository: Repository<ParkingImage>,
   ) {}
 
   async setAvailable(isAvailable: boolean, user: User) {
@@ -31,7 +34,7 @@ export class ParkingService {
     createParkingDTO: CreateParkingDTO,
     user: User,
   ): Promise<Parking> {
-    const { lat, lng, timezones, price } = createParkingDTO;
+    const { lat, lng, timezones, price, images } = createParkingDTO;
 
     const connection = getConnection();
     const queryRunner = connection.createQueryRunner();
@@ -79,6 +82,15 @@ export class ParkingService {
         timezonesToSave.push(timezone);
       }
       await queryRunner.manager.save(timezonesToSave);
+
+      const imagesToSave: ParkingImage[] = [];
+      for (const image of images) {
+        const parkingImage = this.imageRepository.create();
+        parkingImage.url = image;
+        parkingImage.parkingId = parking.id;
+        imagesToSave.push(parkingImage);
+      }
+      await queryRunner.manager.save(imagesToSave);
 
       await queryRunner.manager.update(
         User,

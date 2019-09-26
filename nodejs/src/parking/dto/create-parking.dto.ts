@@ -1,5 +1,10 @@
 import { Type } from "class-transformer";
-import { IsNotEmpty, IsOptional, ValidateNested } from "class-validator";
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  ValidateNested,
+} from "class-validator";
 import { TimezoneDTO } from "./timezone.dto";
 
 export class CreateParkingDTO {
@@ -24,4 +29,10 @@ export class CreateParkingDTO {
   @Type(() => TimezoneDTO)
   @IsNotEmpty()
   timezones: TimezoneDTO[];
+
+  // @ValidateNested({ each: true, always: true })
+  // @Type(() => ParkingImageDTO)
+  @IsNotEmpty()
+  @IsArray()
+  images: string[];
 }
