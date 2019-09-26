@@ -43,6 +43,11 @@ export class ParkingController {
     return this.parkingService.createParking(createParkingDTO, user);
   }
 
+  @Get("/all")
+  async getAllParkings() {
+    return this.parkingService.getAllParkings();
+  }
+
   @UseInterceptors(ClassSerializerInterceptor)
   @Get()
   async getParkings(

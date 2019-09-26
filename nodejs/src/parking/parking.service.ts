@@ -30,6 +30,13 @@ export class ParkingService {
     await this.parkingRepository.update({ userId: user.id }, { isAvailable });
   }
 
+  async getAllParkings() {
+    const parkings = await this.parkingRepository.find({
+      relations: ["images", "timezones"],
+    });
+    return parkings.map(parking => parking.toResponseObject());
+  }
+
   async createParking(
     createParkingDTO: CreateParkingDTO,
     user: User,

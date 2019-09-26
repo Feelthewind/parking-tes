@@ -8,4 +8,5 @@ export class ParkingRO {
   price: number;
   timezones?: TimezoneRO[];
   owner?: UserRO;
+  images?: string[];
 }

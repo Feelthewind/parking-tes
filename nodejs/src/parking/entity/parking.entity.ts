@@ -72,6 +72,9 @@ export class Parking extends BaseEntity {
     if (this.user) {
       responseObject.owner = this.user.toResponseObject();
     }
+    if (this.images) {
+      responseObject.images = this.images.map(image => image.url);
+    }
     return responseObject;
   }
 }
