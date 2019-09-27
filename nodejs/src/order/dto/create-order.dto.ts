@@ -1,6 +1,7 @@
 export class CreateOrderDTO {
-  fk_parking_id: number;
+  parkingId: number;
   from: string;
   to: string;
-  carNumber: string;
+  cardNumber: string;
+  minutes: number;
 }

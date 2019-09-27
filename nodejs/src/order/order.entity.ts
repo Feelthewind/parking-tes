@@ -10,6 +10,7 @@ import {
 import { User } from "../auth/user.entity";
 import { Parking } from "../parking/entity/parking.entity";
 import { OrderState } from "./enum/order-state.enum";
+import { OrderRO } from "./ro/order.ro";
 
 @Entity()
 export class Order extends BaseEntity {
@@ -36,8 +37,8 @@ export class Order extends BaseEntity {
   @Column({ type: "timestamptz" })
   to: Date;
 
-  @Column({ name: "car_number" })
-  carNumber: string;
+  @Column({ name: "card_number" })
+  cardNumber: string;
 
   @Column({ default: OrderState.IN_USE })
   state: OrderState;
@@ -45,4 +46,18 @@ export class Order extends BaseEntity {
   @Column({ type: "timestamp", name: "created_at" })
   @CreateDateColumn()
   createdAt: Date;
+
+  toResponseObject() {
+    const { id, from, to, state } = this;
+    const responseObject: OrderRO = {
+      id,
+      from,
+      to,
+      state,
+    };
+    if (this.parking) {
+      responseObject.parking = this.parking.toResponseObject();
+    }
+    return responseObject;
+  }
 }

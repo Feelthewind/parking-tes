@@ -4,6 +4,7 @@ import {
   InternalServerErrorException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import * as moment from "moment";
 import * as schedule from "node-schedule";
 import { getManager, Repository } from "typeorm";
 import { User } from "../auth/user.entity";
@@ -25,9 +26,9 @@ export class OrderService {
     // TODO: check if timezone is correct from dto
 
     // Check if the one who make this call is the same as the one who made the parking => error
-    const { fk_parking_id } = data;
+    const { parkingId } = data;
     const parking = await this.parkingRepository.findOne({
-      id: fk_parking_id,
+      id: parkingId,
     });
     if (parking.userId === user.id) {
       throw new BadRequestException(
@@ -36,17 +37,22 @@ export class OrderService {
     }
 
     try {
-      const { to } = data;
+      const { to, minutes } = data;
       let order: Order;
       await getManager().transaction(async manager => {
         order = this.orderRepository.create({
           ...data,
+          from: new Date(),
+          to: moment()
+            .add(minutes, "minutes")
+            .toDate(),
+          fk_parking_id: data.parkingId,
           fk_buyer_id: user.id,
         });
         order = await manager.save(order);
         await manager.update(
           Parking,
-          { id: data.fk_parking_id },
+          { id: data.parkingId },
           { isAvailable: false },
         );
       });
@@ -65,13 +71,15 @@ export class OrderService {
 
   async getOrderByUser(user: User) {
     try {
-      return this.orderRepository
+      const order = await this.orderRepository
         .createQueryBuilder("order")
         .innerJoinAndSelect("order.parking", "parking")
+        .innerJoinAndSelect("parking.images", "images")
         .innerJoin("order.buyer", "user")
         .where("user.id = :id", { id: user.id })
         .orderBy("order.createdAt", "DESC")
         .getOne();
+      return order.toResponseObject();
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException();
