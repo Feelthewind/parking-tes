@@ -37,15 +37,16 @@ export class OrderService {
     }
 
     try {
-      const { to, minutes } = data;
+      const { minutes } = data;
+      const to = moment()
+        .add(minutes, "minutes")
+        .toDate();
       let order: Order;
       await getManager().transaction(async manager => {
         order = this.orderRepository.create({
           ...data,
           from: new Date(),
-          to: moment()
-            .add(minutes, "minutes")
-            .toDate(),
+          to,
           fk_parking_id: data.parkingId,
           fk_buyer_id: user.id,
         });
@@ -58,9 +59,8 @@ export class OrderService {
       });
 
       // Schedule a job to set the parking as available when times out
-      const date = new Date(to);
       console.log(to);
-      this.scheduleOrder(date, order);
+      this.scheduleOrder(to, order);
 
       // TODO: Save job to reschedule when server restarts.
     } catch (error) {
@@ -77,6 +77,7 @@ export class OrderService {
         .innerJoinAndSelect("parking.images", "images")
         .innerJoin("order.buyer", "user")
         .where("user.id = :id", { id: user.id })
+        .andWhere("order.state = :state", { state: OrderState.IN_USE })
         .orderBy("order.createdAt", "DESC")
         .getOne();
       return order.toResponseObject();
