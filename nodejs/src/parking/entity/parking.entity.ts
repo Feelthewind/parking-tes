@@ -30,6 +30,9 @@ export class Parking extends BaseEntity {
   @Column({ type: "money" })
   price: number;
 
+  @Column()
+  description: string;
+
   @OneToOne(type => User, user => user.parking)
   @JoinColumn({ name: "fk_user_id" })
   user: User;
@@ -59,11 +62,12 @@ export class Parking extends BaseEntity {
   images: ParkingImage[];
 
   toResponseObject() {
-    const { id, isAvailable, price } = this;
+    const { id, isAvailable, price, description } = this;
     const responseObject: ParkingRO = {
       id,
       isAvailable,
       price,
+      description,
       coordinates: this.coordinates.coordinates,
     };
     if (this.timezones) {

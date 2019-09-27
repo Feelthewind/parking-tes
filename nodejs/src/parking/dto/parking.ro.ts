@@ -6,6 +6,7 @@ export class ParkingRO {
   isAvailable: boolean;
   coordinates: number[];
   price: number;
+  description: string;
   timezones?: TimezoneRO[];
   owner?: UserRO;
   images?: string[];

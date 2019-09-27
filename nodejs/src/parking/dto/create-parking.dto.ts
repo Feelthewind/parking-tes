@@ -3,6 +3,7 @@ import {
   IsArray,
   IsNotEmpty,
   IsOptional,
+  IsString,
   ValidateNested,
 } from "class-validator";
 import { TimezoneDTO } from "./timezone.dto";
@@ -19,6 +20,10 @@ export class CreateParkingDTO {
 
   @IsNotEmpty()
   price: number;
+
+  @IsNotEmpty()
+  @IsString()
+  description: string;
 
   // @ValidateNested({ each: true, always: true })
   // @Type(() => AddressDTO)

@@ -41,7 +41,14 @@ export class ParkingService {
     createParkingDTO: CreateParkingDTO,
     user: User,
   ): Promise<Parking> {
-    const { lat, lng, timezones, price, images } = createParkingDTO;
+    const {
+      lat,
+      lng,
+      timezones,
+      price,
+      images,
+      description,
+    } = createParkingDTO;
 
     const connection = getConnection();
     const queryRunner = connection.createQueryRunner();
@@ -58,6 +65,7 @@ export class ParkingService {
       };
       parking.isAvailable = false;
       parking.price = price;
+      parking.description = description;
       parking.userId = user.id;
       parking = await queryRunner.manager.save(parking);
 
@@ -174,6 +182,7 @@ export class ParkingService {
     xmax: number,
     ymax: number,
   ) {
+    // TODO: apply timezones to where clause
     const parkings = await this.parkingRepository
       .createQueryBuilder("parking")
       .leftJoinAndSelect("parking.timezones", "timezones")
@@ -181,6 +190,7 @@ export class ParkingService {
       .where(
         `ST_Contains(ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 4326), parking.coordinates)`,
       )
+      // .andWhere("user.id != :userId", { userId: user.id })
       .getMany();
 
     return parkings.map(parking => parking.toResponseObject());
@@ -192,6 +202,7 @@ export class ParkingService {
     xmax: number,
     ymax: number,
   ) {
+    // TODO: apply timezones to where clause
     const userQb = this.parkingRepository
       .createQueryBuilder("parking")
       .select(

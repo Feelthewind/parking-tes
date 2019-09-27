@@ -36,6 +36,9 @@ export class Order extends BaseEntity {
   @Column({ type: "timestamptz" })
   to: Date;
 
+  @Column({ name: "car_number" })
+  carNumber: string;
+
   @Column({ default: OrderState.IN_USE })
   state: OrderState;
 
