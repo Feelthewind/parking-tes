@@ -33,10 +33,13 @@ export class AuthService {
   ) {}
 
   async socialLogin(provider: SocialProvider, id: string) {
-    let user = await this.userRepository.findOne({
-      provider,
-      thirdPartyID: id,
-    });
+    let user = await this.userRepository.findOne(
+      {
+        provider,
+        thirdPartyID: id,
+      },
+      { relations: ["orders"] },
+    );
 
     if (!user) {
       user = await this.userRepository.create();
@@ -51,7 +54,12 @@ export class AuthService {
       `Generated JWT Token with payload ${JSON.stringify(payload)}`,
     );
 
-    return { accessToken };
+    const inUse = user.orders
+      ? user.orders.filter(order => order.state === OrderState.IN_USE).length >
+        0
+      : false;
+
+    return { accessToken, isSharing: user.isSharing, inUse };
   }
 
   async signUp(signUpDTO: SignUpDTO): Promise<{ accessToken: string }> {

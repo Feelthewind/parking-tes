@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { User } from "../../auth/user.entity";
+import { Order } from "../../order/order.entity";
 import { ParkingRO } from "../dto/parking.ro";
 import { ParkingImage } from "./parkingImage.entity";
 import { Timezone } from "./timezone.entity";
@@ -60,6 +61,9 @@ export class Parking extends BaseEntity {
 
   @OneToMany(type => ParkingImage, images => images.parking)
   images: ParkingImage[];
+
+  @OneToMany(type => Order, order => order.parking)
+  orders: Order[];
 
   toResponseObject() {
     const { id, isAvailable, price, description } = this;

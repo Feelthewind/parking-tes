@@ -135,14 +135,13 @@ export class ParkingService {
     const day = date.getDay();
     const nextDay = day + 1;
     const hours = date.getHours();
-    const hoursLeft = 24 - hours;
     const minutes = date.getMinutes();
-    const minutesLeft = 60 - minutes;
     const startTime = `${hours}:${minutes}`;
 
     const parking = await this.parkingRepository
       .createQueryBuilder("parking")
       .leftJoinAndSelect("parking.timezones", "timezones")
+      .leftJoinAndSelect("parking.orders", "orders")
       .where("parking.id = :id", { id: parkingId })
       .andWhere(
         new Brackets(qb => {
@@ -159,7 +158,10 @@ export class ParkingService {
           );
         }),
       )
+      .orderBy("orders.createdAt", "DESC")
       .getOne();
+
+    const toDate = new Date(parking.orders[0].to);
 
     const maxTime = parking.timezones
       .sort((a, b) => {
@@ -167,11 +169,13 @@ export class ParkingService {
       })[0]
       .to.split(":");
 
-    const current = moment([hours, minutes], "HH:mm");
+    // const current = moment([hours, minutes], "HH:mm");
+    const currentTo = moment([toDate.getHours(), toDate.getMinutes()], "HH:mm");
     const max = moment([maxTime[0], maxTime[1]], "HH:mm");
-    let result = max.diff(current, "minutes");
+    let result = max.diff(currentTo, "minutes");
     if (parking.timezones.length === 2) {
-      result = result + hoursLeft * 60 + minutesLeft;
+      result =
+        result + (24 - toDate.getHours()) * 60 + (60 - toDate.getMinutes());
     }
     return result;
   }

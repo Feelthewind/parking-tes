@@ -120,19 +120,31 @@ export class OrderService {
       .createQueryBuilder("order")
       .update()
       .set({
-        to: () => `"to" + interval '${data[0]} hours ${data[1]} minutes'`, // "to" 여기서 꼭 double quote 사용!!
+        to: () => `"to" + interval '${timeToExtend} minutes'`, // "to" 여기서 꼭 double quote 사용!!
       })
       .where("id = :id", { id: orderId })
       .execute();
 
-    const order = await this.orderRepository.findOne({ id: orderId });
+    // await this.orderRepository
+    //   .createQueryBuilder("order")
+    //   .update()
+    //   .set({
+    //     to: () => `"to" + interval '${data[0]} hours ${data[1]} minutes'`, // "to" 여기서 꼭 double quote 사용!!
+    //   })
+    //   .where("id = :id", { id: orderId })
+    //   .execute();
+
+    const order = await this.orderRepository.findOne(
+      { id: orderId },
+      { relations: ["parking", "parking.timezones", "parking.images"] },
+    );
     const job = schedule.scheduledJobs[orderId];
     if (job && job.cancel()) {
       console.log("cancelled an order and reschedule!");
       const date = new Date(order.to);
       this.scheduleOrder(date, order);
     }
-    return order;
+    return order.toResponseObject();
   }
 
   async checkOrder() {
