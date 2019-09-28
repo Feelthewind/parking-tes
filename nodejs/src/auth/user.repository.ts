@@ -58,9 +58,30 @@ export class UserRepository extends Repository<User> {
     }
   }
 
+  async getMe(userId: number) {
+    const user = await this.findOne({ id: userId }, { relations: ["orders"] });
+
+    console.dir(user);
+    return user;
+  }
+
   async validateUserPassword(signInDTO: SignInDTO): Promise<User> {
     const { email, password } = signInDTO;
-    const user = await this.findOne({ email });
+    const user = await this.findOne({ email }, { relations: ["orders"] });
+    // const user = await this.createQueryBuilder("user")
+    //   .leftJoin("user.order", "order")
+    //   .where("order.state = :orderState", { orderState: OrderState.IN_USE })
+    //   .andWhere("user.email = :email", { email })
+    //   .select("COUNT(DISTINCT(order.id)) as orders")
+    //   .addSelect("user.email", "email")
+    //   .addSelect("user.password", "password")
+    //   .addSelect("user.isSharing", "isSharing")
+    //   .addSelect("user.salt", "salt")
+    //   .groupBy("user.id")
+    //   .getRawOne();
+
+    // console.log("user");
+    // console.dir(user);
 
     if (user && (await user.validatePassword(password))) {
       return user;

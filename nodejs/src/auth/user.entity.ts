@@ -5,9 +5,12 @@ import {
   Column,
   Entity,
   Index,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { OrderState } from "../order/enum/order-state.enum";
+import { Order } from "../order/order.entity";
 import { Parking } from "../parking/entity/parking.entity";
 import { UserRO } from "./dto/user.ro";
 import { SocialProvider } from "./enum/provider.enum";
@@ -47,6 +50,9 @@ export class User extends BaseEntity {
   @OneToOne(type => Parking, parking => parking.user)
   parking: Parking;
 
+  @OneToMany(type => Order, order => order.buyer)
+  orders: Order[];
+
   @Column({ nullable: true })
   provider: SocialProvider;
 
@@ -73,6 +79,11 @@ export class User extends BaseEntity {
       isSharing,
       imgURL,
     };
+    if (this.orders) {
+      responseObject.inUse =
+        this.orders.filter(order => order.state === OrderState.IN_USE).length >
+        0;
+    }
     return responseObject;
   }
 }

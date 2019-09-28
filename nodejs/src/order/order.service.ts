@@ -75,12 +75,14 @@ export class OrderService {
         .createQueryBuilder("order")
         .innerJoinAndSelect("order.parking", "parking")
         .innerJoinAndSelect("parking.images", "images")
+        .innerJoinAndSelect("parking.timezones", "timezones")
         .innerJoin("order.buyer", "user")
         .where("user.id = :id", { id: user.id })
         .andWhere("order.state = :state", { state: OrderState.IN_USE })
         .orderBy("order.createdAt", "DESC")
         .getOne();
-      return order.toResponseObject();
+
+      return order ? order.toResponseObject() : "no order";
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException();

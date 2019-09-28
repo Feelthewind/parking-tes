@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -10,6 +11,7 @@ import * as crypto from "crypto";
 // import * as nodemailer from 'nodemailer';
 // import * as stmpTransport from 'nodemailer-smtp-transport';
 import { MoreThan } from "typeorm";
+import { OrderState } from "../order/enum/order-state.enum";
 import { ChangePasswordDTO } from "./dto/change-password.dto";
 import { SignInDTO } from "./dto/signin.dto";
 import { SignUpDTO } from "./dto/signup.dto";
@@ -65,7 +67,7 @@ export class AuthService {
     return { accessToken };
   }
 
-  async signIn(signInDTO: SignInDTO): Promise<{ accessToken: string }> {
+  async signIn(signInDTO: SignInDTO) {
     const user = await this.userRepository.validateUserPassword(signInDTO);
 
     if (!user) {
@@ -79,7 +81,20 @@ export class AuthService {
       `Generated JWT Token with payload ${JSON.stringify(payload)}`,
     );
 
-    return { accessToken };
+    const inUse =
+      user.orders.filter(order => order.state === OrderState.IN_USE).length > 0;
+
+    return { accessToken, inUse, isSharing };
+  }
+
+  async getMe(userId: number) {
+    const user = await this.userRepository.getMe(userId);
+
+    if (!user) {
+      throw new BadRequestException();
+    }
+
+    return user.toResponseObject();
   }
 
   async refreshToken(payload: Partial<IJwtPayload>) {

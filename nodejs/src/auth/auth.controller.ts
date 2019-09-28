@@ -38,8 +38,13 @@ export class AuthController {
   }
 
   @Post("/signin")
-  signIn(@Body() signInDTO: SignInDTO): Promise<{ accessToken: string }> {
+  signIn(@Body() signInDTO: SignInDTO) {
     return this.authService.signIn(signInDTO);
+  }
+
+  @Get("/me/:userId")
+  getMe(@Param("userId") userId: number) {
+    return this.authService.getMe(userId);
   }
 
   @Post("/social-login")

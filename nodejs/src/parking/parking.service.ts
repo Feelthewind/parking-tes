@@ -187,6 +187,7 @@ export class ParkingService {
       .createQueryBuilder("parking")
       .leftJoinAndSelect("parking.timezones", "timezones")
       .leftJoinAndSelect("parking.user", "user")
+      .leftJoinAndSelect("parking.images", "images")
       .where(
         `ST_Contains(ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 4326), parking.coordinates)`,
       )
