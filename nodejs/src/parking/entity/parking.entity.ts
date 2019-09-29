@@ -10,6 +10,7 @@ import {
 import { User } from "../../auth/user.entity";
 import { Order } from "../../order/order.entity";
 import { ParkingRO } from "../dto/parking.ro";
+import { Coordinates } from "../interface/coordinates";
 import { ParkingImage } from "./parkingImage.entity";
 import { Timezone } from "./timezone.entity";
 
@@ -19,15 +20,23 @@ export class Parking extends BaseEntity {
   id: number;
 
   @Column("geometry", {
-    nullable: true,
     spatialFeatureType: "Point",
     srid: 4326,
   })
   coordinates: Coordinates;
 
-  @Column({ default: false })
+  // @Column({
+  //   type: 'geometry',
+  //   spatialFeatureType: 'Point',
+  //   srid: 4326,
+  // })
+  // @Index({ spatial: true })
+  // coordinates: string;
+
+  @Column({ default: true })
   isAvailable: boolean;
 
+  // TODO: change it to double or something
   @Column({ type: "money" })
   price: number;
 
@@ -38,27 +47,13 @@ export class Parking extends BaseEntity {
   @JoinColumn({ name: "fk_user_id" })
   user: User;
 
-  // @OneToOne(type => Address, address => address.parking)
-  // @JoinColumn({ name: 'fk_address_id' })
-  // address: Address;
-
   @Column({ name: "fk_user_id" })
   userId: number;
-
-  // @Column({ name: 'fk_address_id' })
-  // addressId: number;
 
   @OneToMany(type => Timezone, timezone => timezone.parking)
   timezones: Timezone[];
 
-  // @Column({
-  //   type: 'geometry',
-  //   spatialFeatureType: 'Point',
-  //   srid: 4326,
-  // })
-  // @Index({ spatial: true })
-  // coordinates: string;
-
+  // TODO: change it json type rather than another table
   @OneToMany(type => ParkingImage, images => images.parking)
   images: ParkingImage[];
 
@@ -85,9 +80,4 @@ export class Parking extends BaseEntity {
     }
     return responseObject;
   }
-}
-
-interface Coordinates {
-  type: string;
-  coordinates: number[];
 }

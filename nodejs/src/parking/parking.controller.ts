@@ -72,7 +72,6 @@ export class ParkingController {
   }
 
   @Get("/bounds")
-  // @UseGuards(AuthGuard("jwt"))
   async getParkingsByBounds(
     @Query("xmin") xmin: number,
     @Query("ymin") ymin: number,
@@ -83,7 +82,6 @@ export class ParkingController {
   }
 
   @Get("/clustering")
-  // @UseGuards(AuthGuard("jwt"))
   getParkingsByClustering(
     @Query("xmin") xmin: number,
     @Query("ymin") ymin: number,

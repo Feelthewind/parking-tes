@@ -106,16 +106,6 @@ export class OrderService {
   }
 
   async extendOrderTime(orderId: number, timeToExtend: string) {
-    const data = timeToExtend.split(":");
-
-    // UPDATE "order" SET "to" = 'order.to' + interval '03 hours 30 minutes' WHERE "id" = $1
-
-    // return getManager().query(
-    //   `UPDATE "order" SET "to" = "to" + interval '${data[0]} hours ${
-    //     data[1]
-    //   } minutes' WHERE id = ${orderId}`,
-    // );
-
     await this.orderRepository
       .createQueryBuilder("order")
       .update()
@@ -136,7 +126,7 @@ export class OrderService {
 
     const order = await this.orderRepository.findOne(
       { id: orderId },
-      { relations: ["parking", "parking.timezones", "parking.images"] },
+      { relations: ["parking", "parking.timezones", "parking.images"] }, // for frontend.. flutter json structure is now bad
     );
     const job = schedule.scheduledJobs[orderId];
     if (job && job.cancel()) {

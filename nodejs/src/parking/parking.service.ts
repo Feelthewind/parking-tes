@@ -63,29 +63,10 @@ export class ParkingService {
         type: "Point",
         coordinates: [lat, lng],
       };
-      parking.isAvailable = false;
       parking.price = price;
       parking.description = description;
       parking.userId = user.id;
       parking = await queryRunner.manager.save(parking);
-
-      // const result = await queryRunner.manager
-      //   .createQueryBuilder()
-      //   .insert()
-      //   .into(Parking)
-      //   .values({
-      //     isAvailable: false,
-      //     userId: user.id,
-      //     addressId: newAddress.id,
-      //     coordinates: 'ST_SetSRID(ST_MakePoint(:lat, :lng), 4326)::geography',
-      //   })
-      //   .setParameters({
-      //     lat,
-      //     lng,
-      //   })
-      //   .execute();
-
-      // console.dir(result);
 
       const timezonesToSave: Timezone[] = [];
       for (const t of timezones) {
@@ -122,15 +103,9 @@ export class ParkingService {
     } finally {
       await queryRunner.release();
     }
-
-    // return this.parkingRepository.createParking(
-    //   createParkingDTO,
-    //   user,
-    //   newAddress,
-    // );
   }
 
-  async getTimeToExtend(parkingId: number) {
+  async getTimeToExtend(parkingId: number): Promise<number> {
     const date = new Date();
     const day = date.getDay();
     const nextDay = day + 1;
@@ -138,29 +113,31 @@ export class ParkingService {
     const minutes = date.getMinutes();
     const startTime = `${hours}:${minutes}`;
 
+    // TODO: Make correct query!!
     const parking = await this.parkingRepository
       .createQueryBuilder("parking")
       .leftJoinAndSelect("parking.timezones", "timezones")
       .leftJoinAndSelect("parking.orders", "orders")
       .where("parking.id = :id", { id: parkingId })
-      .andWhere(
-        new Brackets(qb => {
-          qb.where(`timezones.day = ${day}`).andWhere(
-            `timezones.from <= :from`,
-            { from: startTime },
-          );
-        }),
-      )
-      .orWhere(
-        new Brackets(qb => {
-          qb.where(`timezones.day = ${nextDay}`).andWhere(
-            `timezones.from = '00:00'`,
-          );
-        }),
-      )
+      // .andWhere(
+      //   new Brackets(qb => {
+      //     qb.where(`timezones.day = ${day}`).andWhere(
+      //       `timezones.from <= :from`,
+      //       { from: startTime },
+      //     );
+      //   }),
+      // )
+      // .orWhere(
+      //   new Brackets(qb => {
+      //     qb.where(`timezones.day = ${nextDay}`).andWhere(
+      //       `timezones.from = '00:00'`,
+      //     );
+      //   }),
+      // )
       .orderBy("orders.createdAt", "DESC")
       .getOne();
 
+    // Check this
     const toDate = new Date(parking.orders[0].to);
 
     const maxTime = parking.timezones
@@ -195,7 +172,7 @@ export class ParkingService {
       .where(
         `ST_Contains(ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 4326), parking.coordinates)`,
       )
-      // .andWhere("user.id != :userId", { userId: user.id })
+      .andWhere("parking.isAvailable = true")
       .getMany();
 
     return parkings.map(parking => parking.toResponseObject());
@@ -211,12 +188,12 @@ export class ParkingService {
     const userQb = this.parkingRepository
       .createQueryBuilder("parking")
       .select(
-        `ST_ClusterKMeans(parking.coordinates, 5) OVER() AS kmean, ST_Centroid(parking.coordinates) as geom`,
+        `ST_ClusterKMeans(parking.coordinates, 2) OVER() AS kmean, ST_Centroid(parking.coordinates) as geom`,
       )
       .where(
         `ST_Contains(ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 4326), parking.coordinates)`,
-      );
-
+      )
+      .andWhere("parking.isAvailable = true");
     // ST_AsGeoJSON("parking"."coordinates")::json
 
     const clusters = await this.parkingRepository
@@ -234,6 +211,7 @@ export class ParkingService {
     }));
   }
 
+  // Not in use
   async getParkings(
     usageTime: number,
     lat: number,
@@ -300,6 +278,7 @@ export class ParkingService {
     }
   }
 
+  // Not in use
   async getParkingsByDistance(lat, lng) {
     const origin = {
       type: "Point",
