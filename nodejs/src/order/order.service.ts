@@ -31,6 +31,10 @@ export class OrderService {
       id: parkingId,
     });
     if (parking.userId === user.id) {
+      console.log("=================================");
+      console.log("=================================");
+      console.log("=================================");
+      console.log("badrequestexcetpion");
       throw new BadRequestException(
         "자신이 공유한 주차장은 구매할 수 없습니다.",
       );
@@ -82,7 +86,10 @@ export class OrderService {
         .orderBy("order.createdAt", "DESC")
         .getOne();
 
-      return order ? order.toResponseObject() : "no order";
+      return order ? order.toResponseObject() : null;
+      // if (!order) {
+      //   return order.toResponseObject();
+      // }
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException();

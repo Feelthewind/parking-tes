@@ -59,7 +59,7 @@ export class UserRepository extends Repository<User> {
   }
 
   async getMe(userId: number) {
-    const user = await this.findOne({ id: userId }, { relations: ["orders"] });
+    const user = await this.findOne({ id: userId }, { relations: ["orders"] }); // to get inUse info
 
     console.dir(user);
     return user;

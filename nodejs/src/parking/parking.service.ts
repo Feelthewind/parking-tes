@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   UnprocessableEntityException,
@@ -49,6 +50,11 @@ export class ParkingService {
       images,
       description,
     } = createParkingDTO;
+
+    const found = await this.parkingRepository.findOne({ userId: user.id });
+    if (found) {
+      throw new ConflictException("공유주차장은 1개만 등록할 수 있습니다.");
+    }
 
     const connection = getConnection();
     const queryRunner = connection.createQueryRunner();
@@ -184,31 +190,36 @@ export class ParkingService {
     xmax: number,
     ymax: number,
   ) {
-    // TODO: apply timezones to where clause
-    const userQb = this.parkingRepository
-      .createQueryBuilder("parking")
-      .select(
-        `ST_ClusterKMeans(parking.coordinates, 2) OVER() AS kmean, ST_Centroid(parking.coordinates) as geom`,
-      )
-      .where(
-        `ST_Contains(ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 4326), parking.coordinates)`,
-      )
-      .andWhere("parking.isAvailable = true");
-    // ST_AsGeoJSON("parking"."coordinates")::json
+    try {
+      // TODO: apply timezones to where clause
+      const userQb = this.parkingRepository
+        .createQueryBuilder("parking")
+        .select(
+          `ST_ClusterKMeans(parking.coordinates, 5) OVER() AS kmean, ST_Centroid(parking.coordinates) as geom`,
+        )
+        .where(
+          `ST_Contains(ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 4326), parking.coordinates)`,
+        )
+        .andWhere("parking.isAvailable = true");
+      // ST_AsGeoJSON("parking"."coordinates")::json
 
-    const clusters = await this.parkingRepository
-      .createQueryBuilder()
-      .select(
-        "usr.kmean, count(*), ST_AsGeoJSON(ST_Centroid(ST_SetSRID(ST_Extent(geom), 4326)))::json as center",
-      )
-      .from("(" + userQb.getQuery() + ")", "usr")
-      .groupBy("usr.kmean")
-      .getRawMany();
+      const clusters = await this.parkingRepository
+        .createQueryBuilder()
+        .select(
+          "usr.kmean, count(*), ST_AsGeoJSON(ST_Centroid(ST_SetSRID(ST_Extent(geom), 4326)))::json as center",
+        )
+        .from("(" + userQb.getQuery() + ")", "usr")
+        .groupBy("usr.kmean")
+        .getRawMany();
 
-    return clusters.map(cluster => ({
-      count: cluster.count,
-      center: cluster.center.coordinates,
-    }));
+      return clusters.map(cluster => ({
+        count: cluster.count,
+        center: cluster.center.coordinates,
+      }));
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
   // Not in use

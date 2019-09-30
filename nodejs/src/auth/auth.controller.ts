@@ -19,8 +19,8 @@ import { AuthService } from "./auth.service";
 import { ChangePasswordDTO } from "./dto/change-password.dto";
 import { SignInDTO } from "./dto/signin.dto";
 import { SignUpDTO } from "./dto/signUp.dto";
+import { SocialLoginDTO } from "./dto/social-login.dto";
 import { UpdateUserDTO } from "./dto/update-user.dto";
-import { SocialProvider } from "./enum/provider.enum";
 import { GetUser } from "./get-user.decorator";
 import { User } from "./user.entity";
 
@@ -31,9 +31,7 @@ export class AuthController {
 
   constructor(private authService: AuthService) {}
   @Post("/signup")
-  signUp(
-    @Body(ValidationPipe) signUpDTO: SignUpDTO,
-  ): Promise<{ accessToken: string }> {
+  signUp(@Body(ValidationPipe) signUpDTO: SignUpDTO) {
     return this.authService.signUp(signUpDTO);
   }
 
@@ -42,17 +40,17 @@ export class AuthController {
     return this.authService.signIn(signInDTO);
   }
 
-  @Get("/me/:userId")
-  getMe(@Param("userId") userId: number) {
-    return this.authService.getMe(userId);
+  @Get("/me")
+  @UseGuards(AuthGuard("jwt"))
+  getMe(@GetUser() user: User) {
+    return this.authService.getMe(user.id);
   }
 
   @Post("/social-login")
   socialLogin(
-    @Body("provider") provider: SocialProvider,
-    @Body("id") id: string,
+    @Body() socialLoginDTO: SocialLoginDTO,
   ): Promise<{ accessToken: string }> {
-    return this.authService.socialLogin(provider, id);
+    return this.authService.socialLogin(socialLoginDTO);
   }
 
   @Get("google")

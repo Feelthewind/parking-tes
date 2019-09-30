@@ -15,6 +15,7 @@ import { OrderState } from "../order/enum/order-state.enum";
 import { ChangePasswordDTO } from "./dto/change-password.dto";
 import { SignInDTO } from "./dto/signin.dto";
 import { SignUpDTO } from "./dto/signup.dto";
+import { SocialLoginDTO } from "./dto/social-login.dto";
 import { UpdateUserDTO } from "./dto/update-user.dto";
 import { SocialProvider } from "./enum/provider.enum";
 import { IJwtPayload } from "./interface/jwt-payload.interface";
@@ -32,11 +33,13 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async socialLogin(provider: SocialProvider, id: string) {
+  async socialLogin(socialLoginDTO: SocialLoginDTO) {
+    const { provider, thirdPartyID, email } = socialLoginDTO;
     let user = await this.userRepository.findOne(
       {
         provider,
-        thirdPartyID: id,
+        thirdPartyID,
+        email,
       },
       { relations: ["orders"] },
     );
@@ -44,11 +47,12 @@ export class AuthService {
     if (!user) {
       user = await this.userRepository.create();
       user.provider = provider;
-      user.thirdPartyID = id;
+      user.thirdPartyID = thirdPartyID;
+      user.email = email;
       user = await user.save();
     }
 
-    const payload: Partial<IJwtPayload> = { provider, thirdPartyID: id };
+    const payload: Partial<IJwtPayload> = { provider, thirdPartyID };
     const accessToken = this.jwtService.sign(payload);
     this.logger.debug(
       `Generated JWT Token with payload ${JSON.stringify(payload)}`,
@@ -62,7 +66,7 @@ export class AuthService {
     return { accessToken, isSharing: user.isSharing, inUse };
   }
 
-  async signUp(signUpDTO: SignUpDTO): Promise<{ accessToken: string }> {
+  async signUp(signUpDTO: SignUpDTO) {
     const user = await this.userRepository.signUp(signUpDTO);
 
     const { email } = user;
@@ -72,7 +76,7 @@ export class AuthService {
       `Generated JWT Token with payload ${JSON.stringify(payload)}`,
     );
 
-    return { accessToken };
+    return { accessToken, isSharing: false, inUse: false };
   }
 
   async signIn(signInDTO: SignInDTO) {
