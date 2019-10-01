@@ -1,5 +1,5 @@
-import { UserRO } from "../../auth/dto/user.ro";
-import { TimezoneRO } from "./timezone.ro";
+import { UserRO } from "../../auth/ro/user.ro";
+import { TimezoneRO } from "../dto/timezone.ro";
 
 export class ParkingRO {
   id: number;

@@ -3,9 +3,10 @@ import { OrderRO } from "../../order/ro/order.ro";
 export class UserRO {
   id: number;
   name: string;
-  isDisabled: boolean;
   isSharing: boolean;
-  imgURL: string;
+  inUse: boolean;
+  isDisabled?: boolean;
+  imgURL?: string;
+  accessToken?: string;
   orders?: OrderRO[];
-  inUse?: boolean;
 }

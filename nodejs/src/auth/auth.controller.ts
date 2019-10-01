@@ -22,6 +22,7 @@ import { SignUpDTO } from "./dto/signUp.dto";
 import { SocialLoginDTO } from "./dto/social-login.dto";
 import { UpdateUserDTO } from "./dto/update-user.dto";
 import { GetUser } from "./get-user.decorator";
+import { UserRO } from "./ro/user.ro";
 import { User } from "./user.entity";
 
 @Controller("auth")
@@ -31,25 +32,23 @@ export class AuthController {
 
   constructor(private authService: AuthService) {}
   @Post("/signup")
-  signUp(@Body(ValidationPipe) signUpDTO: SignUpDTO) {
+  signUp(@Body(ValidationPipe) signUpDTO: SignUpDTO): Promise<UserRO> {
     return this.authService.signUp(signUpDTO);
   }
 
   @Post("/signin")
-  signIn(@Body() signInDTO: SignInDTO) {
+  signIn(@Body() signInDTO: SignInDTO): Promise<UserRO> {
     return this.authService.signIn(signInDTO);
   }
 
   @Get("/me")
   @UseGuards(AuthGuard("jwt"))
-  getMe(@GetUser() user: User) {
+  getMe(@GetUser() user: User): Promise<UserRO> {
     return this.authService.getMe(user.id);
   }
 
   @Post("/social-login")
-  socialLogin(
-    @Body() socialLoginDTO: SocialLoginDTO,
-  ): Promise<{ accessToken: string }> {
+  socialLogin(@Body() socialLoginDTO: SocialLoginDTO): Promise<UserRO> {
     return this.authService.socialLogin(socialLoginDTO);
   }
 

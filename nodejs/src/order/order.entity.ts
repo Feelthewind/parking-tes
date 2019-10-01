@@ -58,6 +58,9 @@ export class Order extends BaseEntity {
     if (this.parking) {
       responseObject.parking = this.parking.toResponseObject();
     }
+    if (this.buyer) {
+      responseObject.buyer = this.buyer.toResponseObject();
+    }
     return responseObject;
   }
 }

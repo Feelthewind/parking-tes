@@ -11,7 +11,6 @@ import * as crypto from "crypto";
 // import * as nodemailer from 'nodemailer';
 // import * as stmpTransport from 'nodemailer-smtp-transport';
 import { MoreThan } from "typeorm";
-import { OrderState } from "../order/enum/order-state.enum";
 import { ChangePasswordDTO } from "./dto/change-password.dto";
 import { SignInDTO } from "./dto/signin.dto";
 import { SignUpDTO } from "./dto/signup.dto";
@@ -19,6 +18,7 @@ import { SocialLoginDTO } from "./dto/social-login.dto";
 import { UpdateUserDTO } from "./dto/update-user.dto";
 import { SocialProvider } from "./enum/provider.enum";
 import { IJwtPayload } from "./interface/jwt-payload.interface";
+import { UserRO } from "./ro/user.ro";
 import { User } from "./user.entity";
 import { UserRepository } from "./user.repository";
 // import Mail = require('nodemailer/lib/mailer');
@@ -33,16 +33,15 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async socialLogin(socialLoginDTO: SocialLoginDTO) {
+  async socialLogin(socialLoginDTO: SocialLoginDTO): Promise<UserRO> {
+    console.log("socialLoginDTO");
+    console.dir(socialLoginDTO);
     const { provider, thirdPartyID, email } = socialLoginDTO;
-    let user = await this.userRepository.findOne(
-      {
-        provider,
-        thirdPartyID,
-        email,
-      },
-      { relations: ["orders"] },
-    );
+    let user = await this.userRepository.findOne({
+      provider,
+      thirdPartyID,
+      email,
+    });
 
     if (!user) {
       user = await this.userRepository.create();
@@ -58,15 +57,10 @@ export class AuthService {
       `Generated JWT Token with payload ${JSON.stringify(payload)}`,
     );
 
-    const inUse = user.orders
-      ? user.orders.filter(order => order.state === OrderState.IN_USE).length >
-        0
-      : false;
-
-    return { accessToken, isSharing: user.isSharing, inUse };
+    return user.toResponseObject(accessToken);
   }
 
-  async signUp(signUpDTO: SignUpDTO) {
+  async signUp(signUpDTO: SignUpDTO): Promise<UserRO> {
     const user = await this.userRepository.signUp(signUpDTO);
 
     const { email } = user;
@@ -76,30 +70,27 @@ export class AuthService {
       `Generated JWT Token with payload ${JSON.stringify(payload)}`,
     );
 
-    return { accessToken, isSharing: false, inUse: false };
+    return user.toResponseObject(accessToken);
   }
 
-  async signIn(signInDTO: SignInDTO) {
+  async signIn(signInDTO: SignInDTO): Promise<UserRO> {
     const user = await this.userRepository.validateUserPassword(signInDTO);
 
     if (!user) {
       throw new UnauthorizedException("Invalid credentials");
     }
 
-    const { email, isSharing } = user;
-    const payload: Partial<IJwtPayload> = { email, isSharing };
+    const { email } = user;
+    const payload: Partial<IJwtPayload> = { email };
     const accessToken = await this.jwtService.sign(payload);
     this.logger.debug(
       `Generated JWT Token with payload ${JSON.stringify(payload)}`,
     );
 
-    const inUse =
-      user.orders.filter(order => order.state === OrderState.IN_USE).length > 0;
-
-    return { accessToken, inUse, isSharing };
+    return user.toResponseObject(accessToken);
   }
 
-  async getMe(userId: number) {
+  async getMe(userId: number): Promise<UserRO> {
     const user = await this.userRepository.getMe(userId);
 
     if (!user) {

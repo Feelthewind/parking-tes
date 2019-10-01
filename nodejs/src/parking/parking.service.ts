@@ -13,6 +13,8 @@ import { CreateParkingDTO } from "./dto/create-parking.dto";
 import { Parking } from "./entity/parking.entity";
 import { ParkingImage } from "./entity/parkingImage.entity";
 import { Timezone } from "./entity/timezone.entity";
+import { ClusterRO } from "./ro/cluster.ro";
+import { ParkingRO } from "./ro/parking.ro";
 
 @Injectable()
 export class ParkingService {
@@ -41,7 +43,7 @@ export class ParkingService {
   async createParking(
     createParkingDTO: CreateParkingDTO,
     user: User,
-  ): Promise<Parking> {
+  ): Promise<ParkingRO> {
     const {
       lat,
       lng,
@@ -101,7 +103,7 @@ export class ParkingService {
       );
 
       await queryRunner.commitTransaction();
-      return parking;
+      return parking.toResponseObject();
     } catch (error) {
       console.error(error);
       await queryRunner.rollbackTransaction();
@@ -168,12 +170,12 @@ export class ParkingService {
     ymin: number,
     xmax: number,
     ymax: number,
-  ) {
+  ): Promise<{ parkings: ParkingRO[] }> {
     // TODO: apply timezones to where clause
     const parkings = await this.parkingRepository
       .createQueryBuilder("parking")
       .leftJoinAndSelect("parking.timezones", "timezones")
-      .leftJoinAndSelect("parking.user", "user")
+      // .leftJoinAndSelect("parking.user", "user")
       .leftJoinAndSelect("parking.images", "images")
       .where(
         `ST_Contains(ST_MakeEnvelope(${xmin}, ${ymin}, ${xmax}, ${ymax}, 4326), parking.coordinates)`,
@@ -181,7 +183,7 @@ export class ParkingService {
       .andWhere("parking.isAvailable = true")
       .getMany();
 
-    return parkings.map(parking => parking.toResponseObject());
+    return { parkings: parkings.map(parking => parking.toResponseObject()) };
   }
 
   async getParkingsByClustering(
@@ -189,7 +191,7 @@ export class ParkingService {
     ymin: number,
     xmax: number,
     ymax: number,
-  ) {
+  ): Promise<{ clusters: ClusterRO[] }> {
     try {
       // TODO: apply timezones to where clause
       const userQb = this.parkingRepository
@@ -212,10 +214,12 @@ export class ParkingService {
         .groupBy("usr.kmean")
         .getRawMany();
 
-      return clusters.map(cluster => ({
-        count: cluster.count,
-        center: cluster.center.coordinates,
-      }));
+      return {
+        clusters: clusters.map(cluster => ({
+          count: cluster.count,
+          center: cluster.center.coordinates,
+        })),
+      };
     } catch (error) {
       console.error(error);
       throw error;

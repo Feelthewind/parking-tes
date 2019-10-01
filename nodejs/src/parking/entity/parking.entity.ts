@@ -9,8 +9,8 @@ import {
 } from "typeorm";
 import { User } from "../../auth/user.entity";
 import { Order } from "../../order/order.entity";
-import { ParkingRO } from "../dto/parking.ro";
 import { Coordinates } from "../interface/coordinates";
+import { ParkingRO } from "../ro/parking.ro";
 import { ParkingImage } from "./parkingImage.entity";
 import { Timezone } from "./timezone.entity";
 

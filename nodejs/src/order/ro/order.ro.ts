@@ -1,4 +1,5 @@
-import { ParkingRO } from "../../parking/dto/parking.ro";
+import { UserRO } from "../../auth/ro/user.ro";
+import { ParkingRO } from "../../parking/ro/parking.ro";
 import { OrderState } from "../enum/order-state.enum";
 
 export class OrderRO {
@@ -7,4 +8,5 @@ export class OrderRO {
   to: Date;
   state: OrderState;
   parking?: ParkingRO;
+  buyer?: UserRO;
 }

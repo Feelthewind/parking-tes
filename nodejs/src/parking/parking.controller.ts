@@ -17,10 +17,11 @@ import { AuthGuard } from "@nestjs/passport";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { GetUser } from "../auth/get-user.decorator";
 import { User } from "../auth/user.entity";
-import { OwnerGuard } from "../shared/owner.guard";
 import { CreateParkingDTO } from "./dto/create-parking.dto";
 import { Parking } from "./entity/parking.entity";
 import { ParkingService } from "./parking.service";
+import { ClusterRO } from "./ro/cluster.ro";
+import { ParkingRO } from "./ro/parking.ro";
 
 @Controller("parking")
 @UsePipes(new ValidationPipe())
@@ -29,7 +30,6 @@ export class ParkingController {
 
   @Patch("/available")
   @UseGuards(AuthGuard("jwt"))
-  @UseGuards(new OwnerGuard())
   async setAvailable(@Body("available") available: boolean, @GetUser() user) {
     return this.parkingService.setAvailable(available, user);
   }
@@ -77,7 +77,7 @@ export class ParkingController {
     @Query("ymin") ymin: number,
     @Query("xmax") xmax: number,
     @Query("ymax") ymax: number,
-  ) {
+  ): Promise<{ parkings: ParkingRO[] }> {
     return this.parkingService.getParkingsByBounds(xmin, ymin, xmax, ymax);
   }
 
@@ -87,7 +87,7 @@ export class ParkingController {
     @Query("ymin") ymin: number,
     @Query("xmax") xmax: number,
     @Query("ymax") ymax: number,
-  ) {
+  ): Promise<{ clusters: ClusterRO[] }> {
     return this.parkingService.getParkingsByClustering(xmin, ymin, xmax, ymax);
   }
 

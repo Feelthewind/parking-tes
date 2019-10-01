@@ -3,17 +3,18 @@ import { Exclude } from "class-transformer";
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   Entity,
   Index,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from "typeorm";
-import { OrderState } from "../order/enum/order-state.enum";
 import { Order } from "../order/order.entity";
 import { Parking } from "../parking/entity/parking.entity";
-import { UserRO } from "./dto/user.ro";
 import { SocialProvider } from "./enum/provider.enum";
+import { UserRO } from "./ro/user.ro";
 
 @Entity()
 export class User extends BaseEntity {
@@ -37,6 +38,9 @@ export class User extends BaseEntity {
 
   @Column({ nullable: true, name: "is_sharing", default: false })
   isSharing: boolean;
+
+  @Column({ nullable: true, name: "in_use", default: false })
+  inUse: boolean;
 
   @Column({ nullable: true, name: "img_url" })
   imgURL: string;
@@ -65,25 +69,29 @@ export class User extends BaseEntity {
   @Column({ nullable: true, name: "is_disabled", default: false })
   isDisabled: boolean;
 
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);
     return hash === this.password;
   }
 
-  toResponseObject() {
-    const { id, name, isSharing, imgURL, isDisabled } = this;
+  toResponseObject(accessToken: string = null) {
+    const { id, name, isSharing, inUse, imgURL, isDisabled } = this;
     const responseObject: UserRO = {
       id,
       name,
       isDisabled,
       isSharing,
       imgURL,
+      inUse,
+      accessToken,
     };
-    if (this.orders) {
-      responseObject.inUse =
-        this.orders.filter(order => order.state === OrderState.IN_USE).length >
-        0;
-    }
+
     return responseObject;
   }
 }
