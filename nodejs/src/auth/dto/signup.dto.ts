@@ -29,5 +29,5 @@ export class SignUpDTO {
   @IsBoolean()
   @IsNotEmpty()
   @IsOptional()
-  isDisabled: boolean;
+  isDisabled?: boolean;
 }

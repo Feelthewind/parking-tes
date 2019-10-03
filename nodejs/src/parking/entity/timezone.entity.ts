@@ -8,7 +8,7 @@ import {
 } from "typeorm";
 import { Parking } from "./parking.entity";
 
-@Entity()
+@Entity("timezones")
 export class Timezone extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

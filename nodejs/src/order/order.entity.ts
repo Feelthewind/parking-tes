@@ -12,7 +12,7 @@ import { Parking } from "../parking/entity/parking.entity";
 import { OrderState } from "./enum/order-state.enum";
 import { OrderRO } from "./ro/order.ro";
 
-@Entity()
+@Entity("orders")
 export class Order extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

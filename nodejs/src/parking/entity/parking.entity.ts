@@ -14,7 +14,7 @@ import { ParkingRO } from "../ro/parking.ro";
 import { ParkingImage } from "./parkingImage.entity";
 import { Timezone } from "./timezone.entity";
 
-@Entity()
+@Entity("parkings")
 export class Parking extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

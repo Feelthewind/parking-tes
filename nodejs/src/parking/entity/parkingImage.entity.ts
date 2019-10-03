@@ -8,7 +8,7 @@ import {
 } from "typeorm";
 import { Parking } from "./parking.entity";
 
-@Entity({ name: "parking_image" })
+@Entity("parking_images")
 export class ParkingImage extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

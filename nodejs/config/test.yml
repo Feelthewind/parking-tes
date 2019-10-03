@@ -1,2 +1,19 @@
+db:
+  database: "parking_testing"
+  host: "localhost"
+  username: "postgres"
+  password: "password"
+  synchronize: true
+  dropSchema: false
+  logging: false
+
 jwt:
-  secret: 'topSecret51'
+  secret: "topSecret51"
+
+social:
+  google:
+    clientID: "194547753166-a9rbrnhp3qa8jcvfrifehptpcr9k32sr.apps.googleusercontent.com"
+    clientSecret: "1j4oumMPi-ep2EU8U10EuZZQ"
+  naver:
+    clientID: "N2c9ixu4dUStgQgE3blD"
+    clientSecret: "FqXcN6D5_z"

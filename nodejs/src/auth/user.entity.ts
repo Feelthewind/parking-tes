@@ -16,7 +16,7 @@ import { Parking } from "../parking/entity/parking.entity";
 import { SocialProvider } from "./enum/provider.enum";
 import { UserRO } from "./ro/user.ro";
 
-@Entity()
+@Entity("users")
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
