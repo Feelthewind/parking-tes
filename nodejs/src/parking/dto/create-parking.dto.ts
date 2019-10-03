@@ -16,7 +16,7 @@ export class CreateParkingDTO {
   lng: number;
 
   @IsOptional()
-  isAvailable: boolean;
+  isAvailable?: boolean;
 
   @IsNotEmpty()
   price: number;

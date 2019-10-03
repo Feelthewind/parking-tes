@@ -2,9 +2,8 @@ server:
   port: 3000
 
 db:
-  type: 'postgres'
+  type: "postgres"
   port: 5432
-  database: 'parking'
 
 jwt:
   expiresIn: 32000

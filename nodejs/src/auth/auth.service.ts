@@ -34,8 +34,6 @@ export class AuthService {
   ) {}
 
   async socialLogin(socialLoginDTO: SocialLoginDTO): Promise<UserRO> {
-    console.log("socialLoginDTO");
-    console.dir(socialLoginDTO);
     const { provider, thirdPartyID, email } = socialLoginDTO;
     let user = await this.userRepository.findOne({
       provider,

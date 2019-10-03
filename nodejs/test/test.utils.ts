@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import * as fs from "fs";
-import * as Path from "path";
-import { DatabaseService } from "../src/shared/database/database.service";
+import * as path from "path";
+import { DatabaseService } from "../src/database/database.service";
 
 /**
  * This class is used to support database
@@ -51,6 +51,31 @@ export class TestUtils {
     }
   }
 
+  // async loadFixtures(fixturesPath: string) {
+  //   const connection = await this.databaseService.connection;
+  //   try {
+  //     const loader = new Loader();
+  //     loader.load(path.resolve(fixturesPath));
+
+  //     const resolver = new Resolver();
+  //     const fixtures = resolver.resolve(loader.fixtureConfigs);
+  //     const builder = new Builder(connection, new Parser());
+
+  //     for (const fixture of fixturesIterator(fixtures)) {
+  //       const entity = await builder.build(fixture);
+  //       (await this.databaseService.getRepository(
+  //         entity.constructor.name,
+  //       )).save(entity);
+  //     }
+  //   } catch (err) {
+  //     throw err;
+  //   } finally {
+  //     if (connection) {
+  //       await connection.close();
+  //     }
+  //   }
+  // }
+
   /**
    * Returns the entites of the database
    */
@@ -77,7 +102,7 @@ export class TestUtils {
         const repository = await this.databaseService.getRepository(
           entity.name,
         );
-        const fixtureFile = Path.join(
+        const fixtureFile = path.join(
           __dirname,
           `../test/fixtures/${entity.name}.json`,
         );

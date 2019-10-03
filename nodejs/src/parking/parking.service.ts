@@ -6,13 +6,16 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as moment from "moment";
-import { Brackets, getConnection, Repository } from "typeorm";
+import { Brackets, getConnection } from "typeorm";
 import { User } from "../auth/user.entity";
 import { UserRepository } from "../auth/user.repository";
 import { CreateParkingDTO } from "./dto/create-parking.dto";
 import { Parking } from "./entity/parking.entity";
 import { ParkingImage } from "./entity/parkingImage.entity";
 import { Timezone } from "./entity/timezone.entity";
+import { ParkingRepository } from "./repository/parking.repository";
+import { ParkingImageRepository } from "./repository/parkingImage.repository";
+import { TimezoneRepository } from "./repository/timezone.repository";
 import { ClusterRO } from "./ro/cluster.ro";
 import { ParkingRO } from "./ro/parking.ro";
 
@@ -21,15 +24,16 @@ export class ParkingService {
   constructor(
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-    @InjectRepository(Parking)
-    private parkingRepository: Repository<Parking>,
-    @InjectRepository(Timezone)
-    private timezoneRepository: Repository<Timezone>,
-    @InjectRepository(ParkingImage)
-    private imageRepository: Repository<ParkingImage>,
+    @InjectRepository(TimezoneRepository)
+    private timezoneRepository: TimezoneRepository,
+    @InjectRepository(ParkingRepository)
+    private parkingRepository: ParkingRepository,
+    @InjectRepository(ParkingImageRepository)
+    private imageRepository: ParkingImageRepository,
   ) {}
 
   async setAvailable(isAvailable: boolean, user: User) {
+    // await this.parkingRepository.update({ userId: user.id }, { isAvailable });
     await this.parkingRepository.update({ userId: user.id }, { isAvailable });
   }
 
