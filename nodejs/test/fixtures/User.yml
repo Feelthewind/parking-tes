@@ -1,10 +1,10 @@
 entity: User
 items:
   user1:
-    name: "{{name.lastName}}"
+    name: "{{name.firstName}}"
     email: "{{internet.email}}"
     password: "password"
   user2:
-    name: "{{name.lastName}}"
+    name: "{{name.firstName}}"
     email: "{{internet.email}}"
     password: "password"

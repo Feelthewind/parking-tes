@@ -66,6 +66,7 @@ describe("/parking (e2e)", () => {
     }).compile();
     testUtils = testModule.get<TestUtils>(TestUtils);
     await testUtils.resetDb();
+    // await testUtils.synchronizeDB();
     app = testModule.createNestApplication();
     await app.init();
 
@@ -73,15 +74,20 @@ describe("/parking (e2e)", () => {
       ParkingRepository,
     );
     // Fixtures - send api  for password encrpytion and to get accessToken in this case instend of using repository
-    providerToken = (await request(app.getHttpServer())
+    const userResponse1 = await request(app.getHttpServer())
       .post("/auth/signup")
-      .send(fixtureSignUpDTO1)).body.accessToken;
-    secondProviderToken = (await request(app.getHttpServer())
+      .send(fixtureSignUpDTO1);
+    providerToken = userResponse1.body.accessToken;
+
+    const userResponse2 = await request(app.getHttpServer())
       .post("/auth/signup")
-      .send(fixtureSignUpDTO2)).body.accessToken;
-    userToken = (await request(app.getHttpServer())
+      .send(fixtureSignUpDTO2);
+    secondProviderToken = userResponse2.body.accessToken;
+
+    const userResponse3 = await request(app.getHttpServer())
       .post("/auth/signup")
-      .send(fixtureSignUpDTO3)).body.accessToken;
+      .send(fixtureSignUpDTO3);
+    userToken = userResponse3.body.accessToken;
 
     fixtureParkingWithinBounds = (await request(app.getHttpServer())
       .post("/parking")
@@ -96,7 +102,8 @@ describe("/parking (e2e)", () => {
   });
 
   afterEach(async done => {
-    // await testUtils.resetDb();
+    await testUtils.resetDb();
+    // await testUtils.synchronizeDB();
     await testUtils.closeDbConnection();
     done();
   });
@@ -120,6 +127,7 @@ describe("/parking (e2e)", () => {
       };
       it("should create parking", async () => {
         try {
+          // await testUtils.loadFixtures("./fixtures");
           const response = await request(app.getHttpServer())
             .post("/parking")
             .send(newParking)

@@ -1,6 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import * as fs from "fs";
 import * as path from "path";
+import {
+  Builder,
+  fixturesIterator,
+  Loader,
+  Parser,
+  Resolver,
+} from "typeorm-fixtures-cli/dist";
 import { DatabaseService } from "../src/database/database.service";
 
 /**
@@ -24,6 +31,34 @@ export class TestUtils {
     this.databaseService = databaseService;
   }
 
+  async loadFixtures(fixturesPath: string) {
+    const connection = this.databaseService.connection;
+    try {
+      const loader = new Loader();
+      loader.load(path.resolve("./test/fixtures/User.yml"));
+
+      const resolver = new Resolver();
+      const fixtures = resolver.resolve(loader.fixtureConfigs);
+      const builder = new Builder(connection, new Parser());
+
+      console.log("================");
+      console.dir(fixtures);
+
+      for (const fixture of fixturesIterator(fixtures)) {
+        const entity: any = await builder.build(fixture);
+        (await this.databaseService.getRepository(
+          entity.constructor.name,
+        )).save(entity);
+      }
+    } catch (err) {
+      throw err;
+    } finally {
+      if (connection) {
+        await connection.close();
+      }
+    }
+  }
+
   /**
    * Shutdown the http server
    * and close database connections
@@ -43,36 +78,12 @@ export class TestUtils {
     }
   }
 
-  async dropDB() {
-    const connection = await this.databaseService.connection;
-    if (connection.isConnected) {
-      await connection.dropDatabase();
-      // await (await this.databaseService.connection).close();
-    }
-  }
-
-  // async loadFixtures(fixturesPath: string) {
+  // async synchronizeDB() {
   //   const connection = await this.databaseService.connection;
-  //   try {
-  //     const loader = new Loader();
-  //     loader.load(path.resolve(fixturesPath));
-
-  //     const resolver = new Resolver();
-  //     const fixtures = resolver.resolve(loader.fixtureConfigs);
-  //     const builder = new Builder(connection, new Parser());
-
-  //     for (const fixture of fixturesIterator(fixtures)) {
-  //       const entity = await builder.build(fixture);
-  //       (await this.databaseService.getRepository(
-  //         entity.constructor.name,
-  //       )).save(entity);
-  //     }
-  //   } catch (err) {
-  //     throw err;
-  //   } finally {
-  //     if (connection) {
-  //       await connection.close();
-  //     }
+  //   if (connection.isConnected) {
+  //     await connection.dropDatabase();
+  //     return connection.synchronize(true);
+  //     // await (await this.databaseService.connection).close();
   //   }
   // }
 

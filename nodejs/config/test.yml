@@ -3,7 +3,7 @@ db:
   host: "localhost"
   username: "postgres"
   password: "password"
-  synchronize: true
+  synchronize: false
   dropSchema: false
   logging: false
 
