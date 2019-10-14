@@ -1,0 +1,15 @@
+[
+  {
+    "id": 1,
+    "isAvailable": true,
+    "price": 300,
+    "description": "12345",
+    "coordinates": {
+      "type": "Point",
+      "coordinates": [24.58928, 32.424252]
+    },
+    "userId": 1,
+    "user": 1,
+    "fk_user_id": 1
+  }
+]

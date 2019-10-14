@@ -1,10 +1,10 @@
 db:
-  database: "parking_testing"
+  database: "parking_test"
   host: "localhost"
   username: "postgres"
   password: "password"
-  synchronize: false
-  dropSchema: false
+  synchronize: true
+  dropSchema: true
   logging: false
 
 jwt:

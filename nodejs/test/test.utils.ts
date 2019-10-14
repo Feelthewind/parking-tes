@@ -1,13 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import * as fs from "fs";
 import * as path from "path";
-import {
-  Builder,
-  fixturesIterator,
-  Loader,
-  Parser,
-  Resolver,
-} from "typeorm-fixtures-cli/dist";
 import { DatabaseService } from "../src/database/database.service";
 
 /**
@@ -31,33 +24,33 @@ export class TestUtils {
     this.databaseService = databaseService;
   }
 
-  async loadFixtures(fixturesPath: string) {
-    const connection = this.databaseService.connection;
-    try {
-      const loader = new Loader();
-      loader.load(path.resolve("./test/fixtures/User.yml"));
+  // async loadFixtures(fixturesPath: string) {
+  //   const connection = this.databaseService.connection;
+  //   try {
+  //     const loader = new Loader();
+  //     loader.load(path.resolve("./test/fixtures/User.yml"));
 
-      const resolver = new Resolver();
-      const fixtures = resolver.resolve(loader.fixtureConfigs);
-      const builder = new Builder(connection, new Parser());
+  //     const resolver = new Resolver();
+  //     const fixtures = resolver.resolve(loader.fixtureConfigs);
+  //     const builder = new Builder(connection, new Parser());
 
-      console.log("================");
-      console.dir(fixtures);
+  //     console.log("================");
+  //     console.dir(fixtures);
 
-      for (const fixture of fixturesIterator(fixtures)) {
-        const entity: any = await builder.build(fixture);
-        (await this.databaseService.getRepository(
-          entity.constructor.name,
-        )).save(entity);
-      }
-    } catch (err) {
-      throw err;
-    } finally {
-      if (connection) {
-        await connection.close();
-      }
-    }
-  }
+  //     for (const fixture of fixturesIterator(fixtures)) {
+  //       const entity: any = await builder.build(fixture);
+  //       (await this.databaseService.getRepository(
+  //         entity.constructor.name,
+  //       )).save(entity);
+  //     }
+  //   } catch (err) {
+  //     throw err;
+  //   } finally {
+  //     if (connection) {
+  //       await connection.close();
+  //     }
+  //   }
+  // }
 
   /**
    * Shutdown the http server
@@ -98,18 +91,22 @@ export class TestUtils {
     return entities;
   }
 
+  async dropDB() {
+    await this.databaseService.connection.dropDatabase();
+  }
+
   /**
    * Cleans the database and reloads the entries
    */
   async reloadFixtures() {
     const entities = await this.getEntities();
-    await this.cleanAll(entities);
+    // await this.cleanAll(entities);
     await this.loadAll(entities);
   }
 
-  async loadAll(entities) {
+  async loadAll(entities: any[]) {
     try {
-      for (const entity of entities) {
+      for (const entity of entities.sort((a, b) => a.order - b.order)) {
         const repository = await this.databaseService.getRepository(
           entity.name,
         );
@@ -119,7 +116,7 @@ export class TestUtils {
         );
         if (fs.existsSync(fixtureFile)) {
           const items = JSON.parse(fs.readFileSync(fixtureFile, "utf8"));
-          await repository
+          const result = await repository
             .createQueryBuilder(entity.name)
             .insert()
             .values(items)
@@ -137,22 +134,25 @@ export class TestUtils {
    * Cleans the database and reloads the entries
    */
 
-  async resetDb() {
-    const entities = await this.getEntities();
-    await this.cleanAll(entities);
-  }
+  // async resetDb() {
+  //   const entities = await this.getEntities();
+  //   await this.cleanAll(entities);
+  // }
 
   /**
    * Cleans all the entitie
    */
-  private async cleanAll(entities) {
+  async cleanAll(entities) {
     try {
-      for (const entity of entities) {
-        const repository = await this.databaseService.getRepository(
-          entity.name,
-        );
-        await repository.query(`DELETE FROM ${entity.tableName};`);
-      }
+      await this.databaseService.connection.dropDatabase();
+      // for (const entity of entities.sort((a, b) => b.order - a.order)) {
+      //   const repository = await this.databaseService.getRepository(
+      //     entity.name,
+      //   );
+      //   await repository.query(`DELETE FROM ${entity.tableName};`);
+      //   // Reset IDs
+      //   // await repository.query(`DELETE FROM sqlite_sequence WHERE name='${entity.tableName}'`)
+      // }
     } catch (error) {
       throw new Error(`ERROR: Cleaning test db: ${error}`);
     }

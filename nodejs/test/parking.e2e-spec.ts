@@ -65,8 +65,9 @@ describe("/parking (e2e)", () => {
       providers: [DatabaseService, TestUtils],
     }).compile();
     testUtils = testModule.get<TestUtils>(TestUtils);
-    await testUtils.resetDb();
     // await testUtils.synchronizeDB();
+    // await testUtils.reloadFixtures();
+
     app = testModule.createNestApplication();
     await app.init();
 
@@ -102,8 +103,7 @@ describe("/parking (e2e)", () => {
   });
 
   afterEach(async done => {
-    await testUtils.resetDb();
-    // await testUtils.synchronizeDB();
+    // await testUtils.dropDB();
     await testUtils.closeDbConnection();
     done();
   });
@@ -135,12 +135,12 @@ describe("/parking (e2e)", () => {
 
           const body: ParkingRO = response.body;
 
-          const found = await parkingRepository.findOne({
-            id: body.id,
-            description: body.description,
-          });
+          // const found = await parkingRepository.findOne({
+          //   id: body.id,
+          //   description: body.description,
+          // });
 
-          expect(found.description).toEqual(newParking.description);
+          // expect(found.description).toEqual(newParking.description);
           expect(typeof response.body).toBe("object");
           expect(body.description).toBeDefined();
           expect(body.price).toBeDefined();
@@ -185,104 +185,5 @@ describe("/parking (e2e)", () => {
 
       // it("should not send parkings out of bounds", async () => {});
     });
-
-    // it("reject duplicate registration", async () => {
-    //   try {
-    //     const response = await request(app.getHttpServer())
-    //       .post("/auth/signup")
-    //       .send({ ...fixtureSignUpDTO })
-    //       .set("Content-Type", "application/json")
-    //       .set("Accept", "application/json");
-
-    //     expect(response.body.message).toEqual("Email already exists");
-    //     expect(response.status).toBe(HttpStatus.CONFLICT);
-    //   } catch (err) {
-    //     throw err;
-    //   }
-    // });
-
-    // it("signin user", async () => {
-    //   const data: SignInDTO = {
-    //     email: fixtureSignUpDTO.email,
-    //     password: fixtureSignUpDTO.password,
-    //   };
-    //   try {
-    //     const response = await request(app.getHttpServer())
-    //       .post("/auth/signin")
-    //       .send(data)
-    //       .set("Content-Type", "application/json")
-    //       .set("Accept", "application/json");
-
-    //     const body = response.body as UserRO;
-
-    //     expect(body).toHaveProperty("accessToken");
-    //     expect(body).toHaveProperty("name");
-    //     expect(body.name).toEqual(fixtureSignUpDTO.name);
-    //     expect(response.status).toEqual(HttpStatus.CREATED);
-    //   } catch (err) {
-    //     throw err;
-    //   }
-    // });
-
-    // it("get me", async () => {
-    //   try {
-    //     const response = await request(app.getHttpServer())
-    //       .get("/auth/me")
-    //       .set("Authorization", `Bearer ${accessToken}`);
-
-    //     const body = response.body as UserRO;
-    //     expect(body).toHaveProperty("name");
-    //     expect(body.name).toEqual(fixtureSignUpDTO.name);
-    //     expect(body.inUse).toEqual(false);
-    //     expect(body.isSharing).toEqual(false);
-    //     expect(body.accessToken).toEqual(null);
-    //     expect(response.status).toEqual(HttpStatus.OK);
-    //   } catch (err) {
-    //     throw err;
-    //   }
-    // });
-
-    // it("reject sending me using incorrect token", async () => {
-    //   try {
-    //     const response = await request(app.getHttpServer())
-    //       .get("/auth/me")
-    //       .set("Authorization", `Bearer incorrectToken`);
-
-    //     expect(response.status).toEqual(HttpStatus.UNAUTHORIZED);
-    //   } catch (err) {
-    //     throw err;
-    //   }
-    // });
-
-    // it("creates new social user and send userRO", async () => {
-    //   const sociaLoginDTO: SocialLoginDTO = {
-    //     email: "social@gmail.com",
-    //     provider: SocialProvider.GOOGLE,
-    //     thirdPartyID: "fjdkfjkla",
-    //   };
-    //   const response = await request(app.getHttpServer())
-    //     .post("/auth/social-login")
-    //     .send(sociaLoginDTO)
-    //     .set("Content-Type", "application/json")
-    //     .set("Accept", "application/json");
-    //   const found = await userRepository.findOne(sociaLoginDTO);
-
-    //   expect(found.email).toEqual(sociaLoginDTO.email);
-    //   expect(response.body).toHaveProperty("accessToken");
-    //   expect(response.status).toEqual(HttpStatus.CREATED);
-    // });
-
-    // it("login existing social user and not make another user", async () => {
-    //   const response = await request(app.getHttpServer())
-    //     .post("/auth/social-login")
-    //     .send(fixtureSocialLoginDTO)
-    //     .set("Content-Type", "application/json")
-    //     .set("Accept", "application/json");
-    //   const found = await userRepository.find(fixtureSocialLoginDTO);
-
-    //   expect(found.length).toEqual(1);
-    //   expect(response.body).toHaveProperty("accessToken");
-    //   expect(response.status).toEqual(HttpStatus.CREATED);
-    // });
   });
 });
